@@ -1,0 +1,42 @@
+---
+title: "Missing The Point"
+author: "Hanne Oberman"
+date: "7-9-2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Missing The Point
+
+## Intro
+
+- Missing data has to be accomodated, usually filled in
+
+- Filling in is algorithmic, which relies on convergence
+
+- Diagnosing convergence is difficult, both visually and diagnostically
+
+- In this paper we explore diagnostic methods for MICE, and show which parameter has the best performance
+
+## Identifying non-convergence
+
+- What does non-convergence look like? What are the consequences?
+
+- 
+
+## Simulation
+
+- 3x3 missingness conditions: MCAR, MAR, MNAR + 5, 50, 95% of cases incomplete
+
+- outcomes: estimated regression coefficient, CIW, coverage, R2
+
+- convergence parameters: chain means, chain variances, scientific parameter, lambda
+
+- diagnostics: rhat, ac
+
+
+
+
