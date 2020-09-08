@@ -1,27 +1,27 @@
 # Impute the data
 impute <-
   function(amp,
-           mids,
            m_mech,
            p_inc,
            it_nr,
-           it_total = 50,
-           n_imp = 5) {
+           it_total,
+           ...) {
     
     # initialize the mids object in the first iteration
-    if (it_nr == 1) {
+    if (is.null(mids)) {
       mids <<- mice(
-        amp[[m_mech]][[p_inc]],
+        amp,
         m = n_imp,
         method = "norm",
         maxit = 1,
         printFlag = FALSE
       )
-    }
-    
+    } else {
     # append to the mids object in any further iteration
-    if (it_nr > 1) {
-      mids <<- mice.mids(mids, printFlag = FALSE)
+      mids <<- mice.mids(
+        mids, 
+        maxit = 1, 
+        printFlag = FALSE)
     }
     
     # analyze and pool imputations
@@ -60,27 +60,11 @@ impute <-
     )
     
     # save in global environment
-    # if (it_nr == it_total) {
-    #   chain_means <<-
-    #     data.frame(
-    #       mech = rep(m_mech, it_total),
-    #       p = rep(p_inc, it_total),
-    #       it = 1:it_total,
-    #       chain.mean.Y = mids$chainMean["Y", ,],
-    #       chain.mean.X1 = mids$chainMean["X1", ,],
-    #       chain.mean.X2 = mids$chainMean["X2", ,]
-    #     )
-    #   
-    #   chain_vars <<-
-    #     data.frame(
-    #       mech = m_mech,
-    #       p = p_inc,
-    #       it = 1:it_total,
-    #       chain.var.Y = mids$chainVar["Y", ,],
-    #       chain.var.X1 = mids$chainVar["X1", ,],
-    #       chain.var.X2 = mids$chainVar["X2", ,]
-    #     )
-    # }
+    if (it_nr == it_total) {
+      chainmeans <<- c(chainmeans, list(mids$chainMean))
+      chainvars <<- c(chainvars, list(mids$chainVar))
+      mids <<- NULL
+    }
     return(out)
   }
 

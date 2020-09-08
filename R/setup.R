@@ -24,8 +24,9 @@ setup <- function(seed) {
   
   # simulation parameters
   p_inc <<- c(0.05, 0.5, 0.95)
-  m_mech <<- c("MCAR", "MAR", "MCAR")
+  m_mech <<- c("MCAR", "MAR", "MNAR")
   
-  # object to store imputations in
-  mids <<- NULL
+  # objects to store imputations in
+  mids <<- chainmeans <<- chainvars <<- NULL
+  
 }
