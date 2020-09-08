@@ -27,6 +27,6 @@ setup <- function(seed) {
   m_mech <<- c("MCAR", "MAR", "MNAR")
   
   # objects to store imputations in
-  mids <<- chainmeans <<- chainvars <<- NULL
+  mids <<- chainmeans <<- chainvars <<- qhats <<- lambdas <<- NULL
   
 }

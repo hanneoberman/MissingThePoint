@@ -3,9 +3,10 @@
 # setup simulation environment
 source("R/setup.R")
 source("R/impute.R")
+source("R/preprocess.R")
 setup(seed = 1111)
 it_total <- 4
-n_sim <- 3
+n_sim <- 2
 n_imp <- 5
 
 # create simulation function
@@ -29,7 +30,9 @@ out <-
   m_mech = mm,
   p_inc = pp,
   it_nr = it,
-  it_total)})
+  it_total,
+  chainmeans,
+  chainvars)})
   })
 })
 return(out)
@@ -41,9 +44,11 @@ res <-
             expr = simulate(dat, m_mech, p_inc, amp_pat, it_total, chainmeans, chainvars),
             simplify = FALSE)
 
-# extract chain means and chain variances
+# preprocess theta values
 mus <- preprocess(theta = chainmeans, ext = "mu.")
 sigmas <- preprocess(theta = chainvars, ext = "sigma.")
+qhats <- cbind(sim = rep(1:n_sim, each = n_imp*it_total*length(m_mech)*length(p_inc)), qhats)
+lambdas <- cbind(sim = rep(1:n_sim, each = n_imp*it_total*length(m_mech)*length(p_inc)), lambdas)
 
 # apply convergence diagnostics
 # [some code here]
@@ -51,4 +56,4 @@ sigmas <- preprocess(theta = chainvars, ext = "sigma.")
 # summarize results
 tab <- map_df(res, ~ {
   as.data.frame(.)
-}) %>% aggregate(. ~ it + p + mech, data = ., mean)
+}) %>% aggregate(. ~ it + p + mech, data = ., function(x){mean(x, na.rm = TRUE)})

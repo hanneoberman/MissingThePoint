@@ -36,7 +36,7 @@ impute <-
     ci_lo <- est - qt(.975, df = n_imp - 1) * SE
     ci_up <- est + qt(.975, df = n_imp - 1) * SE
     
-    # add convergence parameters
+    # get convergence parameters
     mild <- mids %>% mice::complete("all")
     qhat <-
       map_dbl(mild, ~ {
@@ -54,11 +54,24 @@ impute <-
       it = it_nr,
       est = est,
       CIW = ci_up - ci_lo,
-      cov = ci_lo < Q & Q < ci_up,
-      qhat = t(qhat),
-      lambda = t(lambda)
+      cov = ci_lo < Q & Q < ci_up#,
+      #qhat = t(qhat),
+      #lambda = t(lambda)
     )
-    
+    qhats <<- rbind(qhats, data.frame(
+      mech = m_mech,
+      p = p_inc,
+      it = it_nr,
+      m = 1:5,
+      qhat = qhat
+    ))
+    lambdas <<- rbind(lambdas, data.frame(
+      mech = m_mech,
+      p = p_inc,
+      it = it_nr,
+      m = 1:n_imp,
+      lambda = lambda
+    ))
     # save in global environment
     if (it_nr == it_total) {
       chainmeans <<- c(chainmeans, list(mids$chainMean))
