@@ -10,37 +10,26 @@ n_imp <- 5
 
 # create simulation function
 simulate <- function(dat, m_mech, p_inc, amp_pat, it_total, n_imp, ...){
-# ampute the data
-# amp <- map(m_mech, function(mm) {
-#   map(p_inc, function(pp) {
-#     mice::ampute(
-#       data = dat,
-#       prop = pp,
-#       patterns = amp_pat,
-#       mech = mm
-#     )$amp
-#   }) %>% set_names(as.character(p_inc))
-# }) %>% set_names(as.character(m_mech))
-
-out <- map_dfr(m_mech, function(mm) {
-  map_dfr(p_inc, function(pp) {
-    # ampute the data
+out <- 
+  # for each missingness mechanism...
+  map_dfr(m_mech, function(mm) {
+  # for each proportion of incomplete cases...
+    map_dfr(p_inc, function(pp) {
+    # ampute the complete data
     amp <- mice::ampute(
       data = dat,
       prop = pp,
       patterns = amp_pat,
       mech = mm
     )$amp
-    
+    # for each number of iterations...
     map_dfr(1:it_total, function(it) {
-  # impute and extract results
+  # impute the incomplete date and extract results
   impute(amp,
   m_mech = mm,
   p_inc = pp,
   it_nr = it,
-  it_total,
-  chainmeans,
-  chainvars)})
+  it_total)})
   })
 })
 return(out)
@@ -52,4 +41,14 @@ res <-
             expr = simulate(dat, m_mech, p_inc, amp_pat, it_total, chainmeans, chainvars),
             simplify = FALSE)
 
-#a <- mids$chainMean %>% as.data.frame() %>% t() %>% as.data.frame() %>% cbind(it=1:it_total, m = rep(1:5, each = 5))
+# extract chain means and chain variances
+mus <- preprocess(theta = chainmeans, ext = "mu.")
+sigmas <- preprocess(theta = chainvars, ext = "sigma.")
+
+# apply convergence diagnostics
+# [some code here]
+
+# summarize results
+tab <- map_df(res, ~ {
+  as.data.frame(.)
+}) %>% aggregate(. ~ it + p + mech, data = ., mean)
