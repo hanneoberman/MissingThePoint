@@ -25,8 +25,9 @@ impute <-
     }
     
     # analyze and pool imputations
-    mipo <- mids %>%
-      mice::lm.mids(Y ~ ., .) %>%
+    mira <- mids %>%
+      mice::lm.mids(Y ~ ., .) 
+    mipo <- mira %>%
       mice::pool() %>%
       .$pooled
     
@@ -35,6 +36,7 @@ impute <-
     SE <- sqrt(mipo$b + (mipo$b / n_imp)) %>% .[2]
     ci_lo <- est - qt(.975, df = n_imp - 1) * SE
     ci_up <- est + qt(.975, df = n_imp - 1) * SE
+    r_sq <- pool.r.squared(mira) %>% .[1]
     
     # get convergence parameters
     mild <- mids %>% mice::complete("all")
@@ -54,7 +56,8 @@ impute <-
       it = it_nr,
       est = est,
       CIW = ci_up - ci_lo,
-      cov = ci_lo < Q & Q < ci_up#,
+      cov = ci_lo < Q & Q < ci_up,
+      rsq = r_sq
       #qhat = t(qhat),
       #lambda = t(lambda)
     )

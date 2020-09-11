@@ -5,8 +5,8 @@ source("R/setup.R")
 source("R/impute.R")
 source("R/preprocess.R")
 setup(seed = 1111)
-it_total <- 4
-n_sim <- 2
+it_total <- 50
+n_sim <- 100
 n_imp <- 5
 
 # create simulation function
@@ -39,7 +39,7 @@ return(out)
 }
 
 # run simulation n_sim times
-res <-
+outcomes <-
   replicate(n = n_sim,
             expr = simulate(dat, m_mech, p_inc, amp_pat, it_total, chainmeans, chainvars),
             simplify = FALSE)
@@ -63,10 +63,10 @@ thetas <- mus %>%
 #   convergence()
 
 # summarize results
-tab <- map_df(res, ~ {
+results <- map_df(outcomes, ~ {
   as.data.frame(.)
 }) %>% aggregate(. ~ it + p + mech, data = ., function(x){mean(x, na.rm = TRUE)})
 
 save(thetas, file = "Data/parameters.Rdata")
-save(res, file = "Data/outcomes.Rdata")
-
+save(outcomes, file = "Data/outcomes.Rdata")
+save(results, file = "Data/results.Rdata")

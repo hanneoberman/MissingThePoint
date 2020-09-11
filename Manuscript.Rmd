@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
 # Missing The Point
@@ -38,6 +39,16 @@ knitr::opts_chunk$set(echo = TRUE)
 - convergence parameters: chain means, chain variances, scientific parameter, lambda
 
 - diagnostics: rhat, ac
+
+```{r echo=FALSE}
+load("~/MissingThePoint/Data/results.Rdata")
+results %>% 
+  ggplot() + 
+  geom_hline(yintercept = 0.3334) +
+  geom_point(aes(x=it, y=est, color = mech, shape = as.factor(p))) + 
+  geom_line(aes(x=it, y=est, color = mech, linetype = as.factor(p))) + 
+  theme_classic()
+```
 
 
 
