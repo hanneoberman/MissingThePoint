@@ -13,13 +13,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Intro
 
-- Missing data has to be accomodated, usually filled in
+- Missing data has to be accommodated, usually filled in
 
 - Filling in is algorithmic, which relies on convergence
 
 - Diagnosing convergence is difficult, both visually and diagnostically
 
-- In this paper we explore diagnostic methods for MICE, and show which parameter has the best performance
+- In this paper we explore diagnostic methods for MICE, and show which parameter has the best performance --> most informative about convergence 
+
 
 ## Identifying non-convergence
 
@@ -27,11 +28,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 - 
 
+
 ## Simulation
 
 - 3x3 missingness conditions: MCAR, MAR, MNAR + 5, 50, 95% of cases incomplete
 
-- outcomes: estimated regression coefficient, CIW, coverage, R2
+- outcomes: estimated regression coefficient, CIW, coverage, R2 --> multivariate is key, because univariate convergence does not guarantee multivariate convergence
 
 - convergence parameters: chain means, chain variances, scientific parameter, lambda
 

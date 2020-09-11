@@ -2,7 +2,7 @@
 # requires packages 'purrr' and 'magrittr'/'dplyr', and the functions in SupplementRhat.R
 
 # load function
-source('Thesis/Functions/SupplementRhat.R')
+source('R/SupplementRhat.R')
 
 # function for Rhat for two or more imputation chains
 rhat_adapted <- function(x) {

@@ -2,8 +2,8 @@
 # requires 'dplyr', and the functions in 'ComputeAC.R', and 'ComputeRhat.R'
 
 # load functions
-source('Thesis/Functions/ComputeRhat.R')
-source('Thesis/Functions/ComputeAC.R')
+source('R/ComputeRhat.R')
+source('R/ComputeAC.R')
 
 # combine the two diagnostics
 convergence <- function(x, include_acf = FALSE) {

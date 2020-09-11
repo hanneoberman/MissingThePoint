@@ -49,11 +49,24 @@ mus <- preprocess(theta = chainmeans, ext = "mu.")
 sigmas <- preprocess(theta = chainvars, ext = "sigma.")
 qhats <- cbind(sim = rep(1:n_sim, each = n_imp*it_total*length(m_mech)*length(p_inc)), qhats)
 lambdas <- cbind(sim = rep(1:n_sim, each = n_imp*it_total*length(m_mech)*length(p_inc)), lambdas)
+thetas <- mus %>% 
+  dplyr::full_join(sigmas) %>% 
+  dplyr::full_join(qhats) %>% 
+  dplyr::full_join(lambdas) 
 
-# apply convergence diagnostics
-# [some code here]
+# apply convergence diagnostics to each theta
+# thetas %>% 
+#   select(sim, mech, p, m, it, "lambda") %>% 
+#   filter(mech == "MCAR", p == 0.5, sim == 1) %>%  
+#   pivot_wider(names_from = m, values_from = "lambda") %>% 
+#   .[,-c(1:4)] %>% 
+#   convergence()
 
 # summarize results
 tab <- map_df(res, ~ {
   as.data.frame(.)
 }) %>% aggregate(. ~ it + p + mech, data = ., function(x){mean(x, na.rm = TRUE)})
+
+save(thetas, file = "Data/parameters.Rdata")
+save(res, file = "Data/outcomes.Rdata")
+
