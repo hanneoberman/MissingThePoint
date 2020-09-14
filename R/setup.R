@@ -15,6 +15,9 @@ setup <- function(seed) {
     broom::tidy() %>%
     .[["estimate"]] %>%
     .[2]
+  r2 <- lm(Y ~ X1 + X2, dat) %>% 
+    summary() %>% 
+    .[["r.squared"]]
   
   # create patterns to ampute the data with multivariate missingness
   amp_pat <<-

@@ -40,14 +40,38 @@ library(tidyverse)
 
 - diagnostics: rhat, ac
 
+## Some results
+
 ```{r echo=FALSE}
 load("~/MissingThePoint/Data/results.Rdata")
-results %>% 
-  ggplot() + 
+results %>%
+  ggplot() +
   geom_hline(yintercept = 0.3334) +
-  geom_point(aes(x=it, y=est, color = mech, shape = as.factor(p))) + 
-  geom_line(aes(x=it, y=est, color = mech, linetype = as.factor(p))) + 
+  geom_point(aes(x=it, y=est, color = mech, shape = as.factor(p))) +
+  geom_line(aes(x=it, y=est, color = mech, linetype = as.factor(p))) +
   theme_classic()
+
+# results %>% 
+#   ggplot() + 
+#   geom_hline(yintercept = 0.95) +
+#   geom_point(aes(x=it, y=cov, color = mech, shape = as.factor(p))) + 
+#   geom_line(aes(x=it, y=cov, color = mech, linetype = as.factor(p))) + 
+#   theme_classic()
+
+results %>%
+  ggplot() +
+  #geom_hline(yintercept = 0.3334) +
+  geom_point(aes(x=it, y=CIW, color = mech, shape = as.factor(p))) +
+  geom_line(aes(x=it, y=CIW, color = mech, linetype = as.factor(p))) +
+  theme_classic()
+
+results %>%
+  ggplot() +
+  geom_hline(yintercept = 0.2090) +
+  geom_point(aes(x=it, y=rsq, color = mech, shape = as.factor(p))) +
+  geom_line(aes(x=it, y=rsq, color = mech, linetype = as.factor(p))) +
+  theme_classic()
+
 ```
 
 
