@@ -12,5 +12,6 @@ convergence <- function(x, include_acf = FALSE) {
   out <-  left_join(rhat_adapted(x), ac_adapted(x), by = "iteration") 
   if(include_acf){ out <- left_join(out, ac_adapted(x, "acf"), by = "iteration")
   }
+  out <- out %>% dplyr::rename(it = iteration)
   return(out)
 }

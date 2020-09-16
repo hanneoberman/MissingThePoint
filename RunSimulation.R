@@ -4,10 +4,12 @@
 source("R/setup.R")
 source("R/impute.R")
 source("R/preprocess.R")
+source("R/ComputeDiagnostics.R")
 setup(seed = 1111)
 it_total <- 50
 n_sim <- 100
 n_imp <- 5
+thetas <- c("mu.Y", "mu.X1", "mu.X2", "sigma.Y", "sigma.X1", "sigma.X2", "qhat", "lambda")
 
 # create simulation function
 simulate <- function(dat, m_mech, p_inc, amp_pat, it_total, n_imp, ...){
@@ -49,12 +51,34 @@ mus <- preprocess(theta = chainmeans, ext = "mu.")
 sigmas <- preprocess(theta = chainvars, ext = "sigma.")
 qhats <- cbind(sim = rep(1:n_sim, each = n_imp*it_total*length(m_mech)*length(p_inc)), qhats)
 lambdas <- cbind(sim = rep(1:n_sim, each = n_imp*it_total*length(m_mech)*length(p_inc)), lambdas)
-thetas <- mus %>% 
+parameters <- mus %>% 
   dplyr::full_join(sigmas) %>% 
   dplyr::full_join(qhats) %>% 
   dplyr::full_join(lambdas) 
 
 # apply convergence diagnostics to each theta
+convergence_diagnostics <- purrr::map_dfr(1:n_sim, function(ss) {
+  purrr::map_dfr(m_mech, function(mm) {
+    purrr::map_dfr(p_inc, function(pp) {
+      purrr::map_dfc(thetas, function(tt) {
+        one_theta <- parameters %>%
+          filter(sim == ss, mech == mm, p == pp) %>%
+          select(it, m, tt) %>%
+          arrange(it)
+        matrix(one_theta[[tt]], ncol = n_imp, byrow = T) %>%
+          convergence() %>%
+          select(r.hat.max, ac.max) %>%
+          setNames(., paste0(names(.), ".", tt))
+      }) %>% cbind(
+        sim = ss,
+        mech = mm,
+        p = pp,
+        it = 1:it_total,
+        .
+      )
+    })
+  })
+})
 # thetas %>% 
 #   select(sim, mech, p, m, it, "lambda") %>% 
 #   filter(mech == "MCAR", p == 0.5, sim == 1) %>%  
@@ -63,10 +87,15 @@ thetas <- mus %>%
 #   convergence()
 
 # summarize results
+conv_results <- convergence_diagnostics %>% 
+  select(!sim) %>% 
+  aggregate(. ~ it + p + mech, data = ., function(x){mean(x, na.rm = TRUE)}) 
+
 results <- map_df(outcomes, ~ {
   as.data.frame(.)
-}) %>% aggregate(. ~ it + p + mech, data = ., function(x){mean(x, na.rm = TRUE)})
+}) %>% aggregate(. ~ it + p + mech, data = ., function(x){mean(x, na.rm = TRUE)}) %>% 
+  full_join(., conv_results)
 
-save(thetas, file = "Data/parameters.Rdata")
+save(parameters, file = "Data/parameters.Rdata")
 save(outcomes, file = "Data/outcomes.Rdata")
 save(results, file = "Data/results.Rdata")

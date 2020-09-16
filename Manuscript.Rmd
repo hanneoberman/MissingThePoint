@@ -51,20 +51,37 @@ results %>%
   geom_line(aes(x=it, y=est, color = mech, linetype = as.factor(p))) +
   theme_classic()
 
-# results %>% 
-#   ggplot() + 
-#   geom_hline(yintercept = 0.95) +
-#   geom_point(aes(x=it, y=cov, color = mech, shape = as.factor(p))) + 
-#   geom_line(aes(x=it, y=cov, color = mech, linetype = as.factor(p))) + 
-#   theme_classic()
 
+```
+
+Bias in estimate depends mostly on the amount of missingness (less info to estimate the relation??), but overall MNAR performs the worst, which is stable after it=5.
+
+```{r}
 results %>%
   ggplot() +
-  #geom_hline(yintercept = 0.3334) +
+  geom_hline(yintercept = 0.95) +
+  geom_point(aes(x=it, y=cov, color = mech, shape = as.factor(p))) +
+  geom_line(aes(x=it, y=cov, color = mech, linetype = as.factor(p))) +
+  theme_classic()
+
+
+```
+
+Cov is more or less fine, except for MNAR with only 0.05% incomplete cases --> due to bias in the estimate in combination with very narrow CI (see CIW!). However, all stable after it=3??
+
+```{r}
+results %>%
+  ggplot() +
   geom_point(aes(x=it, y=CIW, color = mech, shape = as.factor(p))) +
   geom_line(aes(x=it, y=CIW, color = mech, linetype = as.factor(p))) +
   theme_classic()
 
+
+```
+
+CIW clearly determined by the proportion of incomplete cases. Worst for p=0.95, then stable after it 7.
+
+```{r}
 results %>%
   ggplot() +
   geom_hline(yintercept = 0.2090) +
@@ -74,6 +91,23 @@ results %>%
 
 ```
 
+Magnitude of the bias in R^2 perfectly follows the missingness mechanisms: least bias for MCAR, most for MNAR. Worst effect of non-convergence for p=0.95, MNAR, but stable from it=5.
+
+```{r}
+results %>%
+  ggplot() +
+  geom_point(aes(x=it, y=ac.max.lambda, color = mech, shape = as.factor(p))) +
+  geom_line(aes(x=it, y=ac.max.lambda, color = mech, linetype = as.factor(p))) +
+  theme_classic()
+```
 
 
+```{r}
+results %>%
+  ggplot() +
+  geom_point(aes(x=it, y=r.hat.max.lambda, color = mech, shape = as.factor(p))) +
+  geom_line(aes(x=it, y=r.hat.max.lambda, color = mech, linetype = as.factor(p))) +
+  theme_classic()
+
+```
 
