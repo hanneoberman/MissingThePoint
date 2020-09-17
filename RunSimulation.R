@@ -8,7 +8,7 @@ source("R/ComputeDiagnostics.R")
 setup(seed = 1111)
 it_total <- 5
 n_sim <- 100
-n_imp <- 5
+n_imp <- 50
 thetas <- c("mu.Y", "mu.X1", "mu.X2", "sigma.Y", "sigma.X1", "sigma.X2", "qhat", "lambda")
 
 # create simulation function
