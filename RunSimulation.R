@@ -6,7 +6,7 @@ source("R/impute.R")
 source("R/preprocess.R")
 source("R/ComputeDiagnostics.R")
 setup(seed = 1111)
-it_total <- 50
+it_total <- 5
 n_sim <- 100
 n_imp <- 5
 thetas <- c("mu.Y", "mu.X1", "mu.X2", "sigma.Y", "sigma.X1", "sigma.X2", "qhat", "lambda")
@@ -96,6 +96,10 @@ results <- map_df(outcomes, ~ {
 }) %>% aggregate(. ~ it + p + mech, data = ., function(x){mean(x, na.rm = TRUE)}) %>% 
   full_join(., conv_results)
 
-save(parameters, file = "Data/parameters.Rdata")
-save(outcomes, file = "Data/outcomes.Rdata")
-save(results, file = "Data/results.Rdata")
+save(parameters, file = "Data/parameters_standard_ci.Rdata")
+save(outcomes, file = "Data/outcomes_standard_ci.Rdata")
+save(results, file = "Data/results_standard_ci.Rdata")
+
+# save(parameters, file = "Data/parameters.Rdata")
+# save(outcomes, file = "Data/outcomes.Rdata")
+# save(results, file = "Data/results.Rdata")

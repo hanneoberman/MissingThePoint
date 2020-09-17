@@ -29,13 +29,13 @@ impute <-
       mice::lm.mids(Y ~ ., .) 
     mipo <- mira %>%
       mice::pool() %>%
-      .$pooled
+      summary(., conf.int = TRUE)
     
     # extract statistics
-    est <- mipo$estimate[2]
-    SE <- sqrt(mipo$b + (mipo$b / n_imp)) %>% .[2]
-    ci_lo <- est - qt(.975, df = n_imp - 1) * SE
-    ci_up <- est + qt(.975, df = n_imp - 1) * SE
+    est <- mipo[["estimate"]][2]
+    # SE <- sqrt(mipo$b + (mipo$b / n_imp)) %>% .[2]
+    ci_lo <- mipo[["2.5 %"]][2] # est - qt(.975, df = n_imp - 1) * SE
+    ci_up <- mipo[["97.5 %"]][2] # est + qt(.975, df = n_imp - 1) * SE
     r_sq <- pool.r.squared(mira) %>% .[1]
     
     # get convergence parameters

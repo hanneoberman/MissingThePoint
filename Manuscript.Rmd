@@ -8,6 +8,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+load("~/MissingThePoint/Data/results.Rdata")
+
 ```
 
 # Missing The Point
@@ -43,7 +45,6 @@ library(tidyverse)
 ## Some results
 
 ```{r echo=FALSE}
-load("~/MissingThePoint/Data/results.Rdata")
 results %>%
   ggplot() +
   geom_hline(yintercept = 0.3334) +
@@ -55,6 +56,8 @@ results %>%
 ```
 
 Bias in estimate depends mostly on the amount of missingness (less info to estimate the relation??), but overall MNAR performs the worst, which is stable after it=5.
+
+Update with different CI computation, see https://stefvanbuuren.name/fimd/sec-evaluation.html#sec:quantifyingbias
 
 ```{r}
 results %>%
@@ -96,6 +99,60 @@ Magnitude of the bias in R^2 perfectly follows the missingness mechanisms: least
 ```{r}
 results %>%
   ggplot() +
+  geom_point(aes(x=it, y=ac.max.mu.Y, color = mech, shape = as.factor(p))) +
+  geom_line(aes(x=it, y=ac.max.mu.Y, color = mech, linetype = as.factor(p))) +
+  theme_classic()
+```
+
+
+```{r}
+results %>%
+  ggplot() +
+  geom_point(aes(x=it, y=r.hat.max.mu.Y, color = mech, shape = as.factor(p))) +
+  geom_line(aes(x=it, y=r.hat.max.mu.Y, color = mech, linetype = as.factor(p))) +
+  theme_classic()
+
+```
+```{r}
+results %>%
+  ggplot() +
+  geom_point(aes(x=it, y=ac.max.sigma.Y, color = mech, shape = as.factor(p))) +
+  geom_line(aes(x=it, y=ac.max.sigma.Y, color = mech, linetype = as.factor(p))) +
+  theme_classic()
+```
+
+
+```{r}
+results %>%
+  ggplot() +
+  geom_point(aes(x=it, y=r.hat.max.sigma.Y, color = mech, shape = as.factor(p))) +
+  geom_line(aes(x=it, y=r.hat.max.sigma.Y, color = mech, linetype = as.factor(p))) +
+  theme_classic()
+
+```
+
+```{r}
+results %>%
+  ggplot() +
+  geom_point(aes(x=it, y=ac.max.qhat, color = mech, shape = as.factor(p))) +
+  geom_line(aes(x=it, y=ac.max.qhat, color = mech, linetype = as.factor(p))) +
+  theme_classic()
+```
+
+
+```{r}
+results %>%
+  ggplot() +
+  geom_point(aes(x=it, y=r.hat.max.qhat, color = mech, shape = as.factor(p))) +
+  geom_line(aes(x=it, y=r.hat.max.qhat, color = mech, linetype = as.factor(p))) +
+  theme_classic()
+
+```
+
+
+```{r}
+results %>%
+  ggplot() +
   geom_point(aes(x=it, y=ac.max.lambda, color = mech, shape = as.factor(p))) +
   geom_line(aes(x=it, y=ac.max.lambda, color = mech, linetype = as.factor(p))) +
   theme_classic()
@@ -110,4 +167,15 @@ results %>%
   theme_classic()
 
 ```
+
+## Discussion
+
+- Estimates etc do not improve after it = 7
+
+- Convergence diagnostics keep improving, but are all stable after 20-30 it
+
+- Univariate thetas do not differentiate between missingness mechanisms or proportions of incomplete cases
+
+- Determining non-stationarity with lambda is more difficult than with qhat :(
+
 
