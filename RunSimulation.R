@@ -2,17 +2,17 @@
 
 # setup simulation environment
 source("R/setup.R")
+source("R/generate.R")
 source("R/impute.R")
 source("R/preprocess.R")
 source("R/ComputeDiagnostics.R")
 setup(seed = 1111)
-it_total <- 5
+it_total <- 50
 n_sim <- 100
-n_imp <- 50
-thetas <- c("mu.Y", "mu.X1", "mu.X2", "sigma.Y", "sigma.X1", "sigma.X2", "qhat", "lambda")
 
 # create simulation function
 simulate <- function(dat, m_mech, p_inc, amp_pat, it_total, n_imp, ...){
+  generate(N=n_cases, vcov = varcov)
 out <- 
   # for each missingness mechanism...
   map_dfr(m_mech, function(mm) {
@@ -96,9 +96,9 @@ results <- map_df(outcomes, ~ {
 }) %>% aggregate(. ~ it + p + mech, data = ., function(x){mean(x, na.rm = TRUE)}) %>% 
   full_join(., conv_results)
 
-save(parameters, file = "Data/parameters_standard_ci.Rdata")
-save(outcomes, file = "Data/outcomes_standard_ci.Rdata")
-save(results, file = "Data/results_standard_ci.Rdata")
+save(parameters, file = "Data/parameters_DGM.Rdata")
+save(outcomes, file = "Data/outcomes_DGM.Rdata")
+save(results, file = "Data/results_DGM.Rdata")
 
 # save(parameters, file = "Data/parameters.Rdata")
 # save(outcomes, file = "Data/outcomes.Rdata")

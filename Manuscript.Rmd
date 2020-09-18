@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-load("~/MissingThePoint/Data/results.Rdata")
+load("~/MissingThePoint/Data/results_standard_ci.Rdata")
 
 ```
 
@@ -47,7 +47,7 @@ load("~/MissingThePoint/Data/results.Rdata")
 ```{r echo=FALSE}
 results %>%
   ggplot() +
-  geom_hline(yintercept = 0.3334) +
+  #geom_hline(yintercept = 0.3334) +
   geom_point(aes(x=it, y=est, color = mech, shape = as.factor(p))) +
   geom_line(aes(x=it, y=est, color = mech, linetype = as.factor(p))) +
   theme_classic()
@@ -62,7 +62,7 @@ Update with different CI computation, see https://stefvanbuuren.name/fimd/sec-ev
 ```{r}
 results %>%
   ggplot() +
-  geom_hline(yintercept = 0.95) +
+  #geom_hline(yintercept = 0.95) +
   geom_point(aes(x=it, y=cov, color = mech, shape = as.factor(p))) +
   geom_line(aes(x=it, y=cov, color = mech, linetype = as.factor(p))) +
   theme_classic()
@@ -87,7 +87,7 @@ CIW clearly determined by the proportion of incomplete cases. Worst for p=0.95, 
 ```{r}
 results %>%
   ggplot() +
-  geom_hline(yintercept = 0.2090) +
+  #geom_hline(yintercept = 0.2090) +
   geom_point(aes(x=it, y=rsq, color = mech, shape = as.factor(p))) +
   geom_line(aes(x=it, y=rsq, color = mech, linetype = as.factor(p))) +
   theme_classic()
@@ -113,6 +113,7 @@ results %>%
   theme_classic()
 
 ```
+
 ```{r}
 results %>%
   ggplot() +
