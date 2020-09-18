@@ -20,7 +20,7 @@ Iterative imputation is a popular tool to accommodate the ubiquitous problem of 
 
 ## Intro
 
-Missing data poses a ubiquitous threat against unbiased, confidence-valid statistical inferences. A popular tool to accommodate missing data. With techniques like multiple imputation (Rubin, 1987), missing data points are imputed (i.e., 'filled in')
+Missing data poses a ubiquitous threat against unbiased, confidence-valid statistical inferences. A popular tool to accommodate missing data is iterative imputation. With techniques like multiple imputation (Rubin, 1987), missing data points are imputed (i.e., 'filled in')
 
 - Missing data has to be accommodated, usually filled in
 
