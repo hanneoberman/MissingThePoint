@@ -7,17 +7,17 @@ source("R/impute.R")
 source("R/preprocess.R")
 source("R/ComputeDiagnostics.R")
 setup(seed = 1111)
-it_total <- 50
+it_total <- 5
 n_sim <- 100
 
 # create simulation function
 simulate <- function(dat, m_mech, p_inc, amp_pat, it_total, n_imp, ...){
-  generate(N=n_cases, vcov = varcov)
 out <- 
   # for each missingness mechanism...
   map_dfr(m_mech, function(mm) {
   # for each proportion of incomplete cases...
     map_dfr(p_inc, function(pp) {
+      generate(N=n_cases, vcov = varcov)
     # ampute the complete data
     amp <- mice::ampute(
       data = dat,
@@ -96,9 +96,9 @@ results <- map_df(outcomes, ~ {
 }) %>% aggregate(. ~ it + p + mech, data = ., function(x){mean(x, na.rm = TRUE)}) %>% 
   full_join(., conv_results)
 
-save(parameters, file = "Data/parameters_DGM.Rdata")
-save(outcomes, file = "Data/outcomes_DGM.Rdata")
-save(results, file = "Data/results_DGM.Rdata")
+save(parameters, file = "Data/parameters_dat.Rdata")
+save(outcomes, file = "Data/outcomes_dat.Rdata")
+save(results, file = "Data/results_dat.Rdata")
 
 # save(parameters, file = "Data/parameters.Rdata")
 # save(outcomes, file = "Data/outcomes.Rdata")
