@@ -7,7 +7,7 @@ source("R/impute.R")
 source("R/preprocess.R")
 source("R/ComputeDiagnostics.R")
 setup(seed = 1111)
-it_total <- 5
+it_total <- 50
 n_sim <- 100
 
 # create simulation function
@@ -96,9 +96,9 @@ results <- map_df(outcomes, ~ {
 }) %>% aggregate(. ~ it + p + mech, data = ., function(x){mean(x, na.rm = TRUE)}) %>% 
   full_join(., conv_results)
 
-save(parameters, file = "Data/parameters_dat.Rdata")
-save(outcomes, file = "Data/outcomes_dat.Rdata")
-save(results, file = "Data/results_dat.Rdata")
+save(parameters, file = "Data/parameters_cov.Rdata")
+save(outcomes, file = "Data/outcomes_cov.Rdata")
+save(results, file = "Data/results_cov.Rdata")
 
 # save(parameters, file = "Data/parameters.Rdata")
 # save(outcomes, file = "Data/outcomes.Rdata")

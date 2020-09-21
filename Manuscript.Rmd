@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-load("~/MissingThePoint/Data/results.Rdata")
+load("~/MissingThePoint/Data/results_COV.Rdata")
 
 ```
 
