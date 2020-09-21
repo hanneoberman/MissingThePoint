@@ -1,15 +1,15 @@
 # data generating
 
 generate <- function(N, vcov){
-dat <<- mvtnorm::rmvnorm(N, sigma = vcov) %>%
+dat <<- mvtnorm::rmvnorm(n = N, sigma = vcov) %>%
   as.data.frame() %>%
-  setNames(c("Y", "X1", "X2")) %>%
-  mutate(Y = Y + rnorm(N, sd = 1))
-Q <<- lm(Y ~ X1 + X2, dat) %>%
+  setNames(c("Y", "X1", "X2")) #%>%
+  #mutate(Y = Y + rnorm(N))
+Q <<- lm(Y ~ ., dat) %>%
   broom::tidy() %>%
   .[["estimate"]] %>%
   .[2]
-r2 <<- lm(Y ~ X1 + X2, dat) %>% 
+r2 <<- lm(Y ~ ., dat) %>% 
   summary() %>% 
   .[["r.squared"]]
 }

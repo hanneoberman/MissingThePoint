@@ -11,7 +11,7 @@ it_total <- 50
 n_sim <- 100
 
 # create simulation function
-simulate <- function(dat, m_mech, p_inc, amp_pat, it_total, n_imp, ...){
+simulate <- function(m_mech, p_inc, amp_pat, it_total, n_imp, ...){
 out <- 
   # for each missingness mechanism...
   map_dfr(m_mech, function(mm) {
@@ -43,7 +43,7 @@ return(out)
 # run simulation n_sim times
 outcomes <-
   replicate(n = n_sim,
-            expr = simulate(dat, m_mech, p_inc, amp_pat, it_total, chainmeans, chainvars),
+            expr = simulate(m_mech, p_inc, amp_pat, it_total, chainmeans, chainvars),
             simplify = FALSE)
 
 # preprocess theta values
