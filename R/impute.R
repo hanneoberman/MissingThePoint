@@ -56,7 +56,7 @@ impute <-
       it = it_nr,
       est = est,
       CIW = ci_up - ci_lo,
-      cov = ci_lo < Q & Q < ci_up,
+      cov = ci_lo < 1 & 1 < ci_up,
       rsq = r_sq
       #qhat = t(qhat),
       #lambda = t(lambda)

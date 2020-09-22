@@ -56,6 +56,9 @@ parameters <- mus %>%
   dplyr::full_join(qhats) %>% 
   dplyr::full_join(lambdas) 
 
+# get theta names for mapping
+thetas <- names(parameters)[-c(1:5)]
+
 # apply convergence diagnostics to each theta
 convergence_diagnostics <- purrr::map_dfr(1:n_sim, function(ss) {
   purrr::map_dfr(m_mech, function(mm) {
@@ -79,12 +82,6 @@ convergence_diagnostics <- purrr::map_dfr(1:n_sim, function(ss) {
     })
   })
 })
-# thetas %>% 
-#   select(sim, mech, p, m, it, "lambda") %>% 
-#   filter(mech == "MCAR", p == 0.5, sim == 1) %>%  
-#   pivot_wider(names_from = m, values_from = "lambda") %>% 
-#   .[,-c(1:4)] %>% 
-#   convergence()
 
 # summarize results
 conv_results <- convergence_diagnostics %>% 
@@ -96,10 +93,7 @@ results <- map_df(outcomes, ~ {
 }) %>% aggregate(. ~ it + p + mech, data = ., function(x){mean(x, na.rm = TRUE)}) %>% 
   full_join(., conv_results)
 
-save(parameters, file = "Data/parameters_cov.Rdata")
-save(outcomes, file = "Data/outcomes_cov.Rdata")
-save(results, file = "Data/results_cov.Rdata")
-
-# save(parameters, file = "Data/parameters.Rdata")
-# save(outcomes, file = "Data/outcomes.Rdata")
-# save(results, file = "Data/results.Rdata")
+save(parameters, file = "Data/raw_parameters.Rdata")
+save(outcomes, file = "Data/raw_outcomes.Rdata")
+save(convergence_diagnostics, file = "Data/diagnostics.Rdata")
+save(results, file = "Data/results.Rdata")

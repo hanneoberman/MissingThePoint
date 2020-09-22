@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-load("~/MissingThePoint/Data/results_COV.Rdata")
+load("~/MissingThePoint/Data/results_test.Rdata")
 
 ```
 
@@ -66,9 +66,9 @@ Bias in estimate depends mostly on the amount of missingness (less info to estim
 Update with different CI computation, see https://stefvanbuuren.name/fimd/sec-evaluation.html#sec:quantifyingbias
 
 ```{r}
-results %>%
+results %>% #filter(it>6) %>% 
   ggplot() +
-  #geom_hline(yintercept = 0.95) +
+  geom_hline(yintercept = 0.95, size = 2, color = "grey") +
   geom_point(aes(x=it, y=cov, color = mech, shape = as.factor(p))) +
   geom_line(aes(x=it, y=cov, color = mech, linetype = as.factor(p))) +
   theme_classic()
@@ -91,9 +91,9 @@ results %>%
 CIW clearly determined by the proportion of incomplete cases. Worst for p=0.95, then stable after it 7.
 
 ```{r}
-results %>%
+results %>% 
+  # filter(it>6) %>% 
   ggplot() +
-  #geom_hline(yintercept = 0.2090) +
   geom_point(aes(x=it, y=rsq, color = mech, shape = as.factor(p))) +
   geom_line(aes(x=it, y=rsq, color = mech, linetype = as.factor(p))) +
   theme_classic()
@@ -185,4 +185,10 @@ results %>%
 
 - Determining non-stationarity with lambda is more difficult than with qhat :(
 
+## Check if heuristic for AC works
+```{r}
+load("~/MissingThePoint/Data/convergence_diagnostics_test.Rdata")
+convergence_diagnostics %>% filter(sim == 1, mech == "MCAR", p ==0.95) %>% ggplot(aes(x=it, y = ac.max.qhat)) + geom_line()
+convergence_diagnostics %>% filter(sim == 1, mech == "MCAR", p ==0.95) %>% ggplot(aes(x=it, y = ac.max.lambda)) + geom_line()
+```
 

@@ -19,8 +19,7 @@ setup <- function(seed) {
   n_imp <<- 5
   m_mech <<- c("MCAR", "MAR", "MNAR")
   p_inc <<- c(0.05, 0.5, 0.95)
-  thetas <<- c("mu.Y", "mu.X1", "mu.X2", "sigma.Y", "sigma.X1", "sigma.X2", "qhat", "lambda")
-  
+
   # objects to store imputations in
   mids <<- chainmeans <<- chainvars <<- qhats <<- lambdas <<- NULL
   
