@@ -26,7 +26,7 @@ impute <-
     
     # analyze and pool imputations
     mira <- mids %>%
-      mice::lm.mids(Y ~ ., .) 
+      mice::lm.mids(Y ~ ., data = .) 
     mipo <- mira %>%
       mice::pool() %>%
       summary(., conf.int = TRUE)

@@ -187,8 +187,91 @@ results %>%
 
 ## Check if heuristic for AC works
 ```{r}
-load("~/MissingThePoint/Data/convergence_diagnostics_test.Rdata")
-convergence_diagnostics %>% filter(sim == 1, mech == "MCAR", p ==0.95) %>% ggplot(aes(x=it, y = ac.max.qhat)) + geom_line()
-convergence_diagnostics %>% filter(sim == 1, mech == "MCAR", p ==0.95) %>% ggplot(aes(x=it, y = ac.max.lambda)) + geom_line()
+# load("~/MissingThePoint/Data/diagnostics.Rdata")
+# load("~/MissingThePoint/Data/raw_outcomes.Rdata")
+sim_nr <- 3
+outcomes[[sim_nr]] %>% filter(mech == "MCAR", p == 0.95) %>% ggplot(aes(x=it, y = est)) + geom_line()
+convergence_diagnostics %>% filter(sim == sim_nr, mech == "MCAR", p ==0.95) %>% ggplot(aes(x=it, y = ac.max.qhat)) + geom_line()
+convergence_diagnostics %>% filter(sim == sim_nr, mech == "MCAR", p ==0.95) %>% ggplot(aes(x=it, y = ac.max.lambda)) + geom_line()
+```
+
+## Example data
+
+```{r}
+# environment
+library(mice)
+set.seed(123)
+
+# functions
+source("~/MissingeThePoint/R/ComputeDiagnostics.R")
+
+not_all_na <- function(x) {
+  !all(is.na(x))
+}
+
+preprocess_thetas <- function(theta, ext){
+  out <- theta %>% 
+  as.data.frame() %>% 
+  t() %>% 
+  as.data.frame() %>%
+        setNames(paste0(ext, ".", names(.))) %>%
+        cbind(
+          it = 1:n_it,
+          m = rep(1:n_imp, each = n_it),
+          .
+        ) %>% 
+    select_if(not_all_na) %>% 
+    arrange(it)
+  rownames(out) <- NULL
+  return(out)
+}
+
+get_diagnostics <- function(parameters) {
+  thetas <- names(parameters)[-c(1:2)]
+  out <- purrr::map_dfc(thetas, function(tt) {
+    matrix(parameters[[tt]], ncol = n_imp, byrow = T) %>%
+      convergence() %>%
+      select(r.hat.max, ac.max) %>%
+      setNames(., paste0(names(.), ".", tt))
+  }) %>%
+    cbind(it = 1:n_it, .)
+  return(out)
+}
+
+impute_once <- function(iteration, ...) {
+  if(is.null(mids)){
+    mids <<- mice(boys, m = n_imp, maxit = 1, printFlag = FALSE)
+  }
+  else {
+    mids <<- mice.mids(mids, printFlag = FALSE)
+  }
+  mira <- mids %>% mice::lm.mids(age ~ ., data = .) 
+  mipo <- mira %>%
+    mice::pool() %>%
+    summary(., conf.int = TRUE)
+  out <- data.frame(it = iteration, est = mipo[["estimate"]][2])
+  return(out)
+}
+
+# parameters
+n_imp <- 5
+n_it <- 10
+
+# analyses
+mids <- NULL
+ests <- purrr::map_dfr(1:n_it, function(it){impute_once(iteration = it)})
+param <- preprocess_thetas(mids$chainMean, ext = "mu") %>% 
+  dplyr::full_join(
+      preprocess_thetas(mids$chainVar, ext = "sigma")
+  )
+convs <- get_diagnostics(param)
+res <- full_join(ests, convs)
+# plot
+ggplot(conv, aes(x = it, y = ac.max.mu.hgt)) +
+  geom_line()
+
+# more analyses
+imp2 <- mice(boys, m = n_imp, maxit = 1, printFlag = FALSE, seed = 123)
+mice.mids(imp2)
 ```
 
