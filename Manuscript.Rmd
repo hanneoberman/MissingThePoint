@@ -203,7 +203,7 @@ library(mice)
 set.seed(123)
 
 # functions
-source("~/MissingeThePoint/R/ComputeDiagnostics.R")
+source("~/MissingThePoint/R/ComputeDiagnostics.R")
 
 not_all_na <- function(x) {
   !all(is.na(x))
@@ -240,7 +240,7 @@ get_diagnostics <- function(parameters) {
 
 impute_once <- function(iteration, ...) {
   if(is.null(mids)){
-    mids <<- mice(boys, m = n_imp, maxit = 1, printFlag = FALSE)
+    mids <<- mice(boys, m = n_imp, maxit = 1, seed = 123, printFlag = FALSE)
   }
   else {
     mids <<- mice.mids(mids, printFlag = FALSE)
@@ -249,29 +249,56 @@ impute_once <- function(iteration, ...) {
   mipo <- mira %>%
     mice::pool() %>%
     summary(., conf.int = TRUE)
+  mild <- mids %>% mice::complete("all")
+  
+  qhat <- 
+      map_dbl(mild, ~ {
+        lm(formula = age ~ ., data = .) %>% .$coefficients %>% .[2]
+      })
+  lambda <- mild %>%
+      purrr::map_dbl(., ~ {
+        dplyr::mutate(., dplyr::across(dplyr::everything(), ~as.numeric(.))) %>% 
+        princomp(., cor = TRUE) %>% .$sdev %>% .[1] %>% . ^ 2 #first eigenvalue of the varcovar matrix
+      })
+  qhats <<- rbind(qhats, data.frame(it = iteration, m = 1:n_imp, qhat = qhat))
+  lambdas <<- rbind(lambdas, data.frame(it = iteration, m = 1:n_imp, lambda = lambda))
+  
   out <- data.frame(it = iteration, est = mipo[["estimate"]][2])
   return(out)
 }
 
 # parameters
 n_imp <- 5
-n_it <- 10
+n_it <- 20
 
 # analyses
-mids <- NULL
+mids <- qhats <- lambdas <- NULL
 ests <- purrr::map_dfr(1:n_it, function(it){impute_once(iteration = it)})
+mids <- mice(boys, m = n_imp, maxit = n_it, seed = 123, printFlag = FALSE)
 param <- preprocess_thetas(mids$chainMean, ext = "mu") %>% 
   dplyr::full_join(
-      preprocess_thetas(mids$chainVar, ext = "sigma")
+      preprocess_thetas(mids$chainVar, ext = "sigma") %>% 
+        dplyr::full_join(qhats) %>% 
+        dplyr::full_join(lambdas)
   )
 convs <- get_diagnostics(param)
 res <- full_join(ests, convs)
+
 # plot
-ggplot(conv, aes(x = it, y = ac.max.mu.hgt)) +
+ggplot(res, aes(x = it, y = est)) +
+  geom_line()
+ggplot(res, aes(x = it, y = ac.max.mu.hgt)) +
+  geom_line()
+ggplot(res, aes(x = it, y = ac.max.qhat)) +
+  geom_line()
+ggplot(res, aes(x = it, y = ac.max.lambda)) +
+  geom_line()
+ggplot(res, aes(x = it, y = r.hat.max.mu.hgt)) +
+  geom_line()
+ggplot(res, aes(x = it, y = r.hat.max.qhat)) +
+  geom_line()
+ggplot(res, aes(x = it, y = r.hat.max.lambda)) +
   geom_line()
 
-# more analyses
-imp2 <- mice(boys, m = n_imp, maxit = 1, printFlag = FALSE, seed = 123)
-mice.mids(imp2)
 ```
 
