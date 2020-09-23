@@ -198,107 +198,22 @@ convergence_diagnostics %>% filter(sim == sim_nr, mech == "MCAR", p ==0.95) %>% 
 ## Example data
 
 ```{r}
-# environment
-library(mice)
-set.seed(123)
+load("~/MissingThePoint/Data/example.Rdata")
 
-# functions
-source("~/MissingThePoint/R/ComputeDiagnostics.R")
-
-not_all_na <- function(x) {
-  !all(is.na(x))
+# plot example
+plotfun <- function(v){
+ggplot(example, aes(x = it, y = .data[[v]])) +
+  geom_line() +
+  theme_classic()
 }
 
-preprocess_thetas <- function(theta, ext){
-  out <- theta %>% 
-  as.data.frame() %>% 
-  t() %>% 
-  as.data.frame() %>%
-        setNames(paste0(ext, ".", names(.))) %>%
-        cbind(
-          it = 1:n_it,
-          m = rep(1:n_imp, each = n_it),
-          .
-        ) %>% 
-    select_if(not_all_na) %>% 
-    arrange(it)
-  rownames(out) <- NULL
-  return(out)
-}
+plotfun(v="est")
+plotfun(v="ac.max.qhat")
+plotfun(v="ac.max.lambda")
+plotfun(v="r.hat.max.qhat")+list(geom_hline(yintercept = 1.2, color = "grey"))
+plotfun(v="r.hat.max.lambda")+list(geom_hline(yintercept = 1.2, color = "grey"))
 
-get_diagnostics <- function(parameters) {
-  thetas <- names(parameters)[-c(1:2)]
-  out <- purrr::map_dfc(thetas, function(tt) {
-    matrix(parameters[[tt]], ncol = n_imp, byrow = T) %>%
-      convergence() %>%
-      select(r.hat.max, ac.max) %>%
-      setNames(., paste0(names(.), ".", tt))
-  }) %>%
-    cbind(it = 1:n_it, .)
-  return(out)
-}
-
-impute_once <- function(iteration, ...) {
-  if(is.null(mids)){
-    mids <<- mice(boys, m = n_imp, maxit = 1, seed = 123, printFlag = FALSE)
-  }
-  else {
-    mids <<- mice.mids(mids, printFlag = FALSE)
-  }
-  mira <- mids %>% mice::lm.mids(age ~ ., data = .) 
-  mipo <- mira %>%
-    mice::pool() %>%
-    summary(., conf.int = TRUE)
-  mild <- mids %>% mice::complete("all")
-  
-  qhat <- 
-      map_dbl(mild, ~ {
-        lm(formula = age ~ ., data = .) %>% .$coefficients %>% .[2]
-      })
-  lambda <- mild %>%
-      purrr::map_dbl(., ~ {
-        dplyr::mutate(., dplyr::across(dplyr::everything(), ~as.numeric(.))) %>% 
-        princomp(., cor = TRUE) %>% .$sdev %>% .[1] %>% . ^ 2 #first eigenvalue of the varcovar matrix
-      })
-  qhats <<- rbind(qhats, data.frame(it = iteration, m = 1:n_imp, qhat = qhat))
-  lambdas <<- rbind(lambdas, data.frame(it = iteration, m = 1:n_imp, lambda = lambda))
-  
-  out <- data.frame(it = iteration, est = mipo[["estimate"]][2])
-  return(out)
-}
-
-# parameters
-n_imp <- 5
-n_it <- 20
-
-# analyses
-mids <- qhats <- lambdas <- NULL
-ests <- purrr::map_dfr(1:n_it, function(it){impute_once(iteration = it)})
-mids <- mice(boys, m = n_imp, maxit = n_it, seed = 123, printFlag = FALSE)
-param <- preprocess_thetas(mids$chainMean, ext = "mu") %>% 
-  dplyr::full_join(
-      preprocess_thetas(mids$chainVar, ext = "sigma") %>% 
-        dplyr::full_join(qhats) %>% 
-        dplyr::full_join(lambdas)
-  )
-convs <- get_diagnostics(param)
-res <- full_join(ests, convs)
-
-# plot
-ggplot(res, aes(x = it, y = est)) +
-  geom_line()
-ggplot(res, aes(x = it, y = ac.max.mu.hgt)) +
-  geom_line()
-ggplot(res, aes(x = it, y = ac.max.qhat)) +
-  geom_line()
-ggplot(res, aes(x = it, y = ac.max.lambda)) +
-  geom_line()
-ggplot(res, aes(x = it, y = r.hat.max.mu.hgt)) +
-  geom_line()
-ggplot(res, aes(x = it, y = r.hat.max.qhat)) +
-  geom_line()
-ggplot(res, aes(x = it, y = r.hat.max.lambda)) +
-  geom_line()
-
+load("~/MissingThePoint/Data/example_mids.Rdata")
+plot(mids)
 ```
 
