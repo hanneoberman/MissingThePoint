@@ -6,10 +6,50 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+# environment
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-load("~/MissingThePoint/Data/results_test.Rdata")
+library(mice)
+load("Data/results.Rdata")
 
+# sim results plotting function
+generic_plot <- function(v, name, ...){
+  results %>%
+    mutate(
+      p = factor(p, levels = c(0.05, 0.5, 0.95), labels = c("5%", "50%", "95%")),
+      mech = factor(mech, levels = c("MCAR", "MAR", "MNAR"))
+      ) %>% 
+  ggplot(aes(
+    x=.data[["it"]], 
+    y=.data[[v]], 
+    color = .data[["p"]], 
+    shape = .data[["mech"]], 
+    linetype = .data[["mech"]]
+    )) +
+  #geom_point(na.rm = TRUE) +
+  geom_line(na.rm = TRUE) +
+  labs(
+    x = "Number of iterations",
+    y = name,
+    color = "Incomplete \n cases", 
+    shape = "Missingness \n mechanism", 
+    linetype = "Missingness \n mechanism") +
+  theme_classic() + 
+  scale_color_manual(values = c(
+    #"#009E73", #green
+    "#56B4E9", #blue
+    #"#E69F00", #orange
+    "#F0E442", #yellow
+    "#D55E00"  #red
+  ))
+  # scale_color_manual(values = c(
+  #   # '#228833', #green
+  #   # '#66CCEE', #blue
+  #   '#CCBB44', #yellow
+  #   '#EE6677',  #red~ish
+  #   '#AA3377'  #maroon
+  #   ))
+}
 ```
 
 # Missing The Point: Non-Convergence in Iterative Imputation Algorithms
@@ -28,12 +68,12 @@ Missing data poses a ubiquitous threat against unbiased, confidence-valid statis
 
 - Diagnosing convergence is difficult, both visually and diagnostically
 
-- In this paper we explore diagnostic methods for MICE, and show which parameter has the best performance --> most informative about convergence 
+- In this paper we explore diagnostic methods for MICE, and show which method (parameter + diagnostic + threshold) is the most informative about convergence 
 
 
 ## Identifying non-convergence
 
-- What does non-convergence look like? What are the consequences?
+- What does non-convergence look like? What are the consequences? Refer to van Buuren (2018) instead of reproducing it. 
 
 - 
 
@@ -51,13 +91,8 @@ Missing data poses a ubiquitous threat against unbiased, confidence-valid statis
 ## Some results
 
 ```{r echo=FALSE}
-results %>%
-  ggplot() +
-  #geom_hline(yintercept = 0.3334) +
-  geom_point(aes(x=it, y=est, color = mech, shape = as.factor(p))) +
-  geom_line(aes(x=it, y=est, color = mech, linetype = as.factor(p))) +
-  theme_classic()
-
+generic_plot(v="est", name = "Regression estimate") + 
+  list(geom_hline(yintercept = 1, color = "grey"))
 
 ```
 
@@ -65,113 +100,70 @@ Bias in estimate depends mostly on the amount of missingness (less info to estim
 
 Update with different CI computation, see https://stefvanbuuren.name/fimd/sec-evaluation.html#sec:quantifyingbias
 
-```{r}
-results %>% #filter(it>6) %>% 
-  ggplot() +
-  geom_hline(yintercept = 0.95, size = 2, color = "grey") +
-  geom_point(aes(x=it, y=cov, color = mech, shape = as.factor(p))) +
-  geom_line(aes(x=it, y=cov, color = mech, linetype = as.factor(p))) +
-  theme_classic()
-
+```{r echo=FALSE}
+generic_plot(v="cov", name = "Coverage rate") + 
+  list(geom_hline(yintercept = 0.95, color = "grey"))
 
 ```
 
 Cov is more or less fine, except for MNAR with only 0.05% incomplete cases --> due to bias in the estimate in combination with very narrow CI (see CIW!). However, all stable after it=3??
 
-```{r}
-results %>%
-  ggplot() +
-  geom_point(aes(x=it, y=CIW, color = mech, shape = as.factor(p))) +
-  geom_line(aes(x=it, y=CIW, color = mech, linetype = as.factor(p))) +
-  theme_classic()
-
+```{r echo=FALSE}
+generic_plot(v="CIW", name = "CI width") 
 
 ```
 
 CIW clearly determined by the proportion of incomplete cases. Worst for p=0.95, then stable after it 7.
 
-```{r}
-results %>% 
-  # filter(it>6) %>% 
-  ggplot() +
-  geom_point(aes(x=it, y=rsq, color = mech, shape = as.factor(p))) +
-  geom_line(aes(x=it, y=rsq, color = mech, linetype = as.factor(p))) +
-  theme_classic()
+```{r echo=FALSE}
+generic_plot(v="rsq", name = "Coefficient of determination (r^2)") +
+  list(geom_hline(yintercept = 0.5, color = "grey"))
 
 ```
 
-Magnitude of the bias in R^2 perfectly follows the missingness mechanisms: least bias for MCAR, most for MNAR. Worst effect of non-convergence for p=0.95, MNAR, but stable from it=5.
+Magnitude of the bias in r^2 perfectly follows the missingness mechanisms: least bias for MCAR, most for MNAR. Worst effect of non-convergence for p=0.95, MNAR, but stable from it=5.
 
-```{r}
-results %>%
-  ggplot() +
-  geom_point(aes(x=it, y=ac.max.mu.Y, color = mech, shape = as.factor(p))) +
-  geom_line(aes(x=it, y=ac.max.mu.Y, color = mech, linetype = as.factor(p))) +
-  theme_classic()
-```
-
-
-```{r}
-results %>%
-  ggplot() +
-  geom_point(aes(x=it, y=r.hat.max.mu.Y, color = mech, shape = as.factor(p))) +
-  geom_line(aes(x=it, y=r.hat.max.mu.Y, color = mech, linetype = as.factor(p))) +
-  theme_classic()
+```{r echo=FALSE}
+generic_plot(v="ac.max.mu.Y", name = "AC chain means") 
 
 ```
 
-```{r}
-results %>%
-  ggplot() +
-  geom_point(aes(x=it, y=ac.max.sigma.Y, color = mech, shape = as.factor(p))) +
-  geom_line(aes(x=it, y=ac.max.sigma.Y, color = mech, linetype = as.factor(p))) +
-  theme_classic()
-```
+This plot above and the next three plots show autocorrelations with different thetas
 
-
-```{r}
-results %>%
-  ggplot() +
-  geom_point(aes(x=it, y=r.hat.max.sigma.Y, color = mech, shape = as.factor(p))) +
-  geom_line(aes(x=it, y=r.hat.max.sigma.Y, color = mech, linetype = as.factor(p))) +
-  theme_classic()
+```{r echo=FALSE}
+generic_plot(v="ac.max.sigma.Y", name = "AC chain variances") 
 
 ```
 
-```{r}
-results %>%
-  ggplot() +
-  geom_point(aes(x=it, y=ac.max.qhat, color = mech, shape = as.factor(p))) +
-  geom_line(aes(x=it, y=ac.max.qhat, color = mech, linetype = as.factor(p))) +
-  theme_classic()
-```
-
-
-```{r}
-results %>%
-  ggplot() +
-  geom_point(aes(x=it, y=r.hat.max.qhat, color = mech, shape = as.factor(p))) +
-  geom_line(aes(x=it, y=r.hat.max.qhat, color = mech, linetype = as.factor(p))) +
-  theme_classic()
+```{r echo=FALSE}
+generic_plot(v="ac.max.qhat", name = "AC scientific estimate") 
 
 ```
 
+```{r echo=FALSE}
+generic_plot(v="ac.max.lambda", name = "AC novel theta") 
 
-```{r}
-results %>%
-  ggplot() +
-  geom_point(aes(x=it, y=ac.max.lambda, color = mech, shape = as.factor(p))) +
-  geom_line(aes(x=it, y=ac.max.lambda, color = mech, linetype = as.factor(p))) +
-  theme_classic()
 ```
 
+```{r echo=FALSE}
+generic_plot(v="r.hat.max.mu.Y", name = "R hat chain means") 
 
-```{r}
-results %>%
-  ggplot() +
-  geom_point(aes(x=it, y=r.hat.max.lambda, color = mech, shape = as.factor(p))) +
-  geom_line(aes(x=it, y=r.hat.max.lambda, color = mech, linetype = as.factor(p))) +
-  theme_classic()
+```
+
+This plot above and the next three plots show r hat values with different thetas
+
+```{r echo=FALSE}
+generic_plot(v="r.hat.max.sigma.Y", name = "R hat chain variances") 
+
+```
+
+```{r echo=FALSE}
+generic_plot(v="r.hat.max.qhat", name = "R hat scientific estimate") 
+
+```
+
+```{r echo=FALSE}
+generic_plot(v="r.hat.max.lambda", name = "R hat novel theta") 
 
 ```
 
@@ -185,24 +177,26 @@ results %>%
 
 - Determining non-stationarity with lambda is more difficult than with qhat :(
 
-## Check if heuristic for AC works
-```{r}
-# load("~/MissingThePoint/Data/diagnostics.Rdata")
-# load("~/MissingThePoint/Data/raw_outcomes.Rdata")
-sim_nr <- 3
-outcomes[[sim_nr]] %>% filter(mech == "MCAR", p == 0.95) %>% ggplot(aes(x=it, y = est)) + geom_line()
-convergence_diagnostics %>% filter(sim == sim_nr, mech == "MCAR", p ==0.95) %>% ggplot(aes(x=it, y = ac.max.qhat)) + geom_line()
-convergence_diagnostics %>% filter(sim == sim_nr, mech == "MCAR", p ==0.95) %>% ggplot(aes(x=it, y = ac.max.lambda)) + geom_line()
-```
+<!-- ## Check if heuristic for AC works -->
+<!-- ```{r} -->
+<!-- load("Data/diagnostics.Rdata") -->
+<!-- load("Data/raw_outcomes.Rdata") -->
+<!-- sim_nr <- 3 -->
+<!-- outcomes[[sim_nr]] %>% filter(mech == "MCAR", p == 0.95) %>% ggplot(aes(x=it, y = est)) + geom_line() -->
+<!-- convergence_diagnostics %>% filter(sim == sim_nr, mech == "MCAR", p ==0.95) %>% ggplot(aes(x=it, y = ac.max.qhat)) + geom_line() -->
+<!-- convergence_diagnostics %>% filter(sim == sim_nr, mech == "MCAR", p ==0.95) %>% ggplot(aes(x=it, y = ac.max.lambda)) + geom_line() -->
+<!-- ``` -->
 
 ## Example data
 
 ```{r}
-load("~/MissingThePoint/Data/example.Rdata")
+# load data
+load("Data/example.Rdata")
+load("Data/example_mids.Rdata")
 
-# plot example
-plotfun <- function(v){
-ggplot(example, aes(x = it, y = .data[[v]])) +
+# plot each var of example data
+plotfun <- function(v, ...){
+ggplot(example, aes(x = .data[["it"]], y = .data[[v]])) +
   geom_line() +
   theme_classic()
 }
@@ -213,7 +207,6 @@ plotfun(v="ac.max.lambda")
 plotfun(v="r.hat.max.qhat")+list(geom_hline(yintercept = 1.2, color = "grey"))
 plotfun(v="r.hat.max.lambda")+list(geom_hline(yintercept = 1.2, color = "grey"))
 
-load("~/MissingThePoint/Data/example_mids.Rdata")
 plot(mids)
 ```
 

@@ -18,7 +18,7 @@ setup <- function(seed) {
   n_cases <<- 1000
   n_imp <<- 5
   m_mech <<- c("MCAR", "MAR", "MNAR")
-  p_inc <<- c(0.05, 0.5, 0.95)
+  p_inc <<- c(0.25, 0.5, 0.75)
 
   # objects to store imputations in
   mids <<- chainmeans <<- chainvars <<- qhats <<- lambdas <<- NULL

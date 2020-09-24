@@ -93,7 +93,7 @@ results <- map_df(outcomes, ~ {
 }) %>% aggregate(. ~ it + p + mech, data = ., function(x){mean(x, na.rm = TRUE)}) %>% 
   full_join(., conv_results)
 
-save(parameters, file = "Data/raw_parameters.Rdata")
-save(outcomes, file = "Data/raw_outcomes.Rdata")
-save(convergence_diagnostics, file = "Data/diagnostics.Rdata")
-save(results, file = "Data/results.Rdata")
+save(parameters, file = "Data/raw_parameters_25_75.Rdata")
+save(outcomes, file = "Data/raw_outcomes_25_75.Rdata")
+save(convergence_diagnostics, file = "Data/diagnostics_25_75.Rdata")
+save(results, file = "Data/results_25_75.Rdata")
