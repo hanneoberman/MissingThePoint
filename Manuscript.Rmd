@@ -26,7 +26,6 @@ generic_plot <- function(v, name, ...){
     shape = .data[["mech"]], 
     linetype = .data[["mech"]]
     )) +
-  #geom_point(na.rm = TRUE) +
   geom_line(na.rm = TRUE) +
   labs(
     x = "Number of iterations",
@@ -91,7 +90,7 @@ Missing data poses a ubiquitous threat against unbiased, confidence-valid statis
 ## Some results
 
 ```{r echo=FALSE}
-generic_plot(v="est", name = "Regression estimate") + 
+generic_plot(v = "est", name = "Regression estimate") + 
   list(geom_hline(yintercept = 1, color = "grey"))
 
 ```
@@ -101,8 +100,12 @@ Bias in estimate depends mostly on the amount of missingness (less info to estim
 Update with different CI computation, see https://stefvanbuuren.name/fimd/sec-evaluation.html#sec:quantifyingbias
 
 ```{r echo=FALSE}
-generic_plot(v="cov", name = "Coverage rate") + 
+generic_plot( v ="cov", name = "Coverage rate") + 
   list(geom_hline(yintercept = 0.95, color = "grey"))
+
+# generic_plot( v ="cov", name = "Coverage rate") + 
+#   list(geom_hline(yintercept = 0.95, color = "grey")) +
+#   ylim(0.85, 1)
 
 ```
 
@@ -166,6 +169,8 @@ generic_plot(v="r.hat.max.qhat", name = "R hat scientific estimate")
 generic_plot(v="r.hat.max.lambda", name = "R hat novel theta") 
 
 ```
+
+These rhat plots all show some initialization before the fifth iteration: is rhat usefull before that??
 
 ## Discussion
 
