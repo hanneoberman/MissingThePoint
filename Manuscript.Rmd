@@ -3,6 +3,7 @@ title: "Missing The Point"
 author: "Hanne Oberman"
 date: "7-9-2020"
 output: html_document
+bibliography: ref.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -59,13 +60,15 @@ Iterative imputation is a popular tool to accommodate the ubiquitous problem of 
 
 ## Intro
 
-Missing data pose a ubiquitous threat to anyone who aims to obtain unbiased, confidence-valid statistical inferences. A popular technique to accommodate missing data is to 'impute' (i.e., fill in) any missing values in an incomplete dataset. Imputation procedures like 'Multiple Imputation by Chained Equations' (MICE) have proven to be powerful tools to draw valid inferences under many missing data circumstances (Rubin, 1987; van Buuren, 2018). Most imputation software packages rely on iterative algorithms to obtain imputed values. 
+Missing data pose a ubiquitous threat to anyone who aims to obtain unbiased, confidence-valid statistical inferences. A popular technique to accommodate missing data is to 'impute' (i.e., fill in) any missing values in an incomplete dataset. Imputation procedures like 'Multiple Imputation by Chained Equations' (MICE) have proven to be powerful tools to draw valid inference under many missing data circumstances (Rubin, 1987; van Buuren, 2018). To obtain imputations, most imputation software packages rely on iterative algorithms. 
 
 With iterative imputation, the validity of the inference depends on the state-space of the algorithm at the final iteration. This introduces a potential threat to the validity of the imputations: What if the algorithm has not converged? Are the imputations then to be trusted? And can we rely on the inference obtained using the imputed data? These remain open questions since the convergence properties of iterative imputation algorithms have not been systematically studied (Van Buuren, 2018, 6.5.2). While there is no scientific consensus on how to evaluate the convergence of imputation algorithms (Zhu & Raghunathan, 2015; Takahashi, 2017), the current practice is to visually inspect imputations for signs of non-convergence. 
 
 Identifying non-convergence through visual inspection may be undesirable for several reasons: 1) it may be challenging to the untrained eye, 2) only severely pathological cases of non-convergence may be diagnosed, and 3) there is not an objective measure that quantifies convergence (Van Buuren, 2018, 6.5.2). Therefore, a quantitative diagnostic method to identify non-convergence would be preferred.
 
-In this paper we explore diagnostic methods for iterative imputation algorithms. For reasons of brevity, we focus on the iterative imputation algorithm implemented in the popular `mice` package (REF) in `R` (REF). We consider two tested non-convergence identifiers for MCMC algorithms: autocorrelation (conform Lynch, 2007, p. 147) and potential scale reduction factor $\widehat{R}$ (conform Vehtari et al., 2019, p. 5).  MICE, and show which method (parameter + diagnostic + threshold) is the most informative about convergence
+In this paper we explore diagnostic methods for iterative imputation algorithms. For reasons of brevity, we focus on the iterative imputation algorithm implemented in the popular `mice` package [@mice] in `R` [@R]. We consider two non-convergence identifiers for iterative algorithms: autocorrelation (conform Lynch, 2007, p. 147) and potential scale reduction factor $\widehat{R}$ (conform Vehtari et al., 2019, p. 5). Aside from the usual parameters to monitor---chain means and chain variances---we also investigate convergence in the multivariate state-space of the algorithm.
+
+We propose a novel multivariate parameter to check for non-convergence in iterative algorithms. Our aim is to show which method (parameter + diagnostic + threshold) is the most informative about non-convergence in the iterative imputation algorithm implemented in `mice`.
 
 
 
@@ -206,7 +209,7 @@ calc rhat and cov for each block of 5 it
 
 disc: conf val is likely to happen much sooner
 
-as soon as we start downweighting the first few it from the calc, the memory effect would 
+as soon as we start down-weighting the first few it from the calc, the memory effect would 
 
 ## Example data
 
@@ -225,9 +228,11 @@ ggplot(example, aes(x = .data[["it"]], y = .data[[v]])) +
 plotfun(v="est")
 plotfun(v="ac.max.qhat") #+ list(scale_y_continuous(limits = c(0.65,1)))
 plotfun(v="ac.max.lambda")
+plotfun(v="r.hat.max.sigma.hgt")+list(geom_hline(yintercept = 1.2, color = "grey"), scale_y_continuous(limits = c(1,2)))
 plotfun(v="r.hat.max.qhat")+list(geom_hline(yintercept = 1.2, color = "grey"), scale_y_continuous(limits = c(1,2)))
 plotfun(v="r.hat.max.lambda")+list(geom_hline(yintercept = 1.2, color = "grey"), scale_y_continuous(limits = c(1,2)))
 
 plot(mids)
 ```
 
+# References
