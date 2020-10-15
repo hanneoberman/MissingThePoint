@@ -11,13 +11,13 @@ bibliography: ref.bib
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(mice)
-load("Data/results.Rdata")
+load("Data/results_25_75.Rdata")
 
 # sim results plotting function
 generic_plot <- function(v, name, ...){
   results %>%
     mutate(
-      p = factor(p, levels = c(0.05, 0.5, 0.95), labels = c("5%", "50%", "95%")),
+      p = factor(p, levels = c(0.25, 0.5, 0.75), labels = c("25%", "50%", "75%")),
       mech = factor(mech, levels = c("MCAR", "MAR", "MNAR"))
       ) %>% 
   ggplot(aes(
@@ -68,35 +68,94 @@ Identifying non-convergence through visual inspection may be undesirable for sev
 
 In this paper we explore diagnostic methods for iterative imputation algorithms. For reasons of brevity, we focus on the iterative imputation algorithm implemented in the popular `mice` package [@mice] in `R` [@R]. We consider two non-convergence identifiers for iterative algorithms: autocorrelation (conform Lynch, 2007, p. 147) and potential scale reduction factor $\widehat{R}$ (conform Vehtari et al., 2019, p. 5). Aside from the usual parameters to monitor---chain means and chain variances---we also investigate convergence in the multivariate state-space of the algorithm.
 
-We propose a novel multivariate parameter to check for non-convergence in iterative algorithms. Our aim is to show which method (parameter + diagnostic + threshold) is the most informative about non-convergence in the iterative imputation algorithm implemented in `mice`.
+We propose a novel multivariate parameter to check for non-convergence in iterative algorithms. Our aim is to show which method is the most informative about non-convergence in iterative imputation. [explain that method = parameter + diagnostic + interpretation]
 
 
 
-- Missing data has to be accommodated, usually filled in
+<!-- - Missing data has to be accommodated, usually filled in -->
 
-- Filling in is algorithmic, which relies on convergence
+<!-- - Filling in is algorithmic, which relies on convergence -->
 
-- Diagnosing convergence is difficult, both visually and diagnostically
+<!-- - Diagnosing convergence is difficult, both visually and diagnostically -->
 
-- In this paper we explore diagnostic methods for MICE, and show which method (parameter + diagnostic + threshold) is the most informative about convergence 
+<!-- - In this paper we explore diagnostic methods for MICE, and show which method (parameter + diagnostic + threshold) is the most informative about convergence  -->
 
 
 ## Identifying non-convergence
 
-- What does non-convergence look like? What are the consequences? Refer to van Buuren (2018) instead of reproducing it. 
+- Iterative imputation is a sort of MCMC algorithm, so it makes sense to investigate non-convergence in a similar fashion to typical MCMC algorithms.
 
-- 
+- What does non-convergence look like? --> non-stat + non-mix in a certain parameter, e.g., chain means.
+
+- What are the consequences? --> bias, under-coverage --> Refer to van Buuren (2018) instead of reproducing this
+
+- Existing non-convergence identifiers for MCMC algorithms are not all applicable, e.g. N_eff is estimated using varcov matrix of the set of samples, while this is not the case in it im per se.
+
+- We consider autocorr and rhat, and monitor four parameters: chain means, chain variances, the scientific estimand, and lambda.
 
 
 ## Simulation
 
-- 3x3 missingness conditions: MCAR, MAR, MNAR + 5, 50, 95% of cases incomplete
+We investigate non-convergence of the MICE algorithm through model-based simulation in R (version 4.0.2; R Core Team 2020). The number of simulation repetitions is 1000, and the simulation set-up is summarized in the pseudo-code below
 
-- outcomes: estimated regression coefficient, CIW, coverage, R2 --> multivariate is key, because univariate convergence does not guarantee multivariate convergence
+```
+# simulation set-up (pseudo-code)
+for each simulation repetition (1:1000)
+  1. simulate complete data
+  for each missingness condition (1:9)
+    2. create missingness
+    for each iteration (1:50)
+     3. impute missingness
+     4. perform analysis of scientific interest
+     5. compute non-convergence diagnostics 
+     6. pool results across imputations
+     7. compute performance measures
+ 8. combine outcomes of all missingness conditions
+9. aggregate outcomes of all simulation repetitions
+```
 
-- convergence parameters: chain means, chain variances, scientific parameter, lambda
+### Aims
+Our aim is to assess the impact of non-convergence on the validity of scientific estimates obtained using `mice`. To induce non-convergence we terminate the iterative algorithm at different imputation chain lengths.
 
-- diagnostics: rhat, ac
+### Data generating mechanism
+Data are generated in each simulation repetition for a sample of $n_{obs} = 1000$ cases. Let the complete set be three multivariate normally distributed random variables
+
+$$
+\begin{pmatrix}
+Y\\
+X_1\\
+X_2
+\end{pmatrix}
+\sim \mathcal{N}
+\begin{bmatrix}
+\begin{pmatrix}
+0\\
+0\\
+0
+\end{pmatrix},
+\begin{pmatrix}
+2     &       &  \\
+0.5   & 1     &  \\
+-0.5  & 0.5   & 1
+\end{pmatrix}
+\end{bmatrix}.
+$$
+The complete set is amputed according to a $3\times3$ factorial design, consisting of three missingness mechanisms and three proportions of incomplete cases. [Briefly describe MCAR, MAR, MNAR + 25, 50, 75% of cases incomplete (not using 5% anymore, because according to Vink, n.d., 25% is more representative of missing data problems in the social sciences)]
+
+### Estimands
+We perform multiple linear regression to predict outcome variable $Y$: $Y' = \beta_0 + \beta_1 X_1 + \beta_2 X_2$, where $Y'$ is the expected value of the outcome. Our estimands are regression coefficient $\beta_1$, and the coefficient of determination, $r^2$.
+
+### Methods
+We use a combination of two non-convergence identifiers---autocorrelation and $\widehat{R}$---and four parameters of interest---chain means, chain variances, a scientific estimate, and the novel parameter we propose, $\lambda$.
+
+### Performance measures
+As recommended by @buur18, our performance measures are bias, empirical coverage rate and confidence interval width of the estimands.
+
+<!-- - outcomes: estimated regression coefficient, CIW, coverage, r2 multivariate is key, because univariate convergence does not guarantee multivariate convergence -->
+
+<!-- - convergence parameters: chain means, chain variances, scientific parameter, lambda -->
+
+<!-- - diagnostics: rhat, ac -->
 
 ## Some results
 
@@ -135,7 +194,7 @@ generic_plot(v="rsq", name = "Coefficient of determination (r^2)") +
 
 ```
 
-Magnitude of the bias in r^2 perfectly follows the missingness mechanisms: least bias for MCAR, most for MNAR. Worst effect of non-convergence for p=0.95, MNAR, but stable from it=5.
+Magnitude of the bias in $r^2$ perfectly follows the missingness mechanisms: least bias for MCAR, most for MNAR. Worst effect of non-convergence for $p=0.95$, MNAR, but stable from it=5.
 
 ```{r echo=FALSE}
 generic_plot(v="ac.max.mu.Y", name = "AC chain means") 
@@ -235,4 +294,4 @@ plotfun(v="r.hat.max.lambda")+list(geom_hline(yintercept = 1.2, color = "grey"),
 plot(mids)
 ```
 
-# References
+# References (incomplete)
