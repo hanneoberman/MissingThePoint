@@ -98,27 +98,29 @@ We propose a novel multivariate parameter to check for non-convergence in iterat
 
 We investigate non-convergence in iterative imputation through model-based simulation in R (version 4.0.2; R Core Team 2020). We provide a summary of the simulation set-up in Algorithm 1; the complete script and technical details are available from [github.com/hanneoberman/MissingThePoint](https://github.com/hanneoberman/MissingThePoint).
 
-    # simulation set-up (pseudo-code)
+Algorithm 1: simulation set-up (pseudo-code)
+
     for each simulation repetition (1:1000)
       1. simulate complete data
       for each missingness condition (1:9)
         2. create missingness
         for each iteration (1:50)
-         3. impute missingness
-         4. perform analysis of scientific interest
-         5. compute non-convergence diagnostics 
-         6. pool results across imputations
-         7. compute performance measures
-     8. combine outcomes of all missingness conditions
-    9. aggregate outcomes of all simulation repetitions
+          3. impute missingness
+          4. perform analysis of scientific interest
+          5. apply non-convergence identifiers
+          6. pool results across imputations
+          7. compute performance measures
+        8. combine outcomes from all iterations
+      9. combine outcomes from all missingness conditions
+    10. aggregate outcomes from all simulation repetitions
 
 ### Aims
 
-Our aim is to assess the impact of non-convergence on the validity of scientific estimates obtained using `mice` [@mice]. Inferential validity is reached when estimates are both  unbiased and have nominal coverage across simulation repetitions ($n_{sim} = 1000$). To induce non-convergence we terminate the iterative algorithm at different imputation chain lengths ($n_{it} = 50$). We differentiate between nine different missingness scenarios: three missingness mechanisms versus three proportions of incomplete cases [remove here if already defined above/below??].
+Our aim is to assess the impact of non-convergence on the validity of scientific estimates obtained using `mice` [@mice]. Inferential validity is reached when estimates are both  unbiased and have nominal coverage across simulation repetitions ($n_{sim} = 1000$). To induce non-convergence we terminate the iterative algorithm at different imputation chain lengths ($n_{it} = 1, 2, ..., 50$). We differentiate between nine different missingness scenarios: three missingness mechanisms versus three proportions of incomplete cases [remove here if already defined above/below??].
 
 ### Data generating mechanism
 
-Data are generated in each simulation repetition for a sample of $n_{obs} = 1000$ cases. Let the complete set be three multivariately normal random variables
+Data are generated in each simulation repetition for a sample of $n_{obs} = 1000$ cases, before inducing missingness. Let the complete set be three multivariately normal random variables
 
 $$
 \begin{pmatrix}
@@ -141,7 +143,7 @@ X_2
 \end{bmatrix}.
 $$ 
 
-The complete set is amputed according to a $3\times3$ factorial design, consisting of three missingness mechanisms and three proportions of incomplete cases. [Briefly describe MCAR, MAR, MNAR + 25, 50, 75% of cases incomplete (not using 5% anymore, because according to Vink, n.d., 25% is more representative of missing data problems in the social sciences)]
+The complete set is amputed according to the nine missingness conditions. We use a $3 \times 3$ factorial design consisting of three missingness mechanisms and three proportions of incomplete cases. [Briefly describe MCAR, MAR, MNAR + 25, 50, 75% of cases incomplete (not using 5% anymore, because according to Vink, n.d., 25% is more representative of missing data problems in the social sciences). And add the `ampute` function?]
 
 ### Estimands
 
@@ -150,7 +152,7 @@ We impute the missing data five times ($m = 5$) using Bayesian linear regression
 $$
 Y' = \beta_0 + \beta_1 X_1 + \beta_2 X_2,
 $$
-where $Y'$ is the expected value of the outcome. Our estimands are the regression coefficient $\beta_1$ and coefficient of determination $r^2$ that we obtain after pooling across the imputations.
+where $Y'$ is the expected value of the outcome. Our estimands are the regression coefficient $\beta_1$ and coefficient of determination $r^2$ that we obtain after pooling the regression results across the imputations.
 
 ### Methods
 
@@ -180,21 +182,23 @@ p <- generic_plot(v="ac.max.sigma.Y", name = "AC chain variances")
 p %>% plotly::ggplotly() 
 ```
 
-Autocorrelations in the chain variances do not show a systematic effect of the missingness conditions either. The number of iterations that is required to reach non-improving autocorrelations is somewhat more ambiguous.
+Autocorrelations in the chain variances do not show a systematic effect of the missingness conditions either. The number of iterations that is required to reach non-improving autocorrelations is somewhat more ambiguous, but roughly when $it \geq 10$.
 
 ```{r echo=FALSE}
 p <- generic_plot(v="ac.max.qhat", name = "AC scientific estimate")
 p %>% plotly::ggplotly() 
 ```
 
+We see that the autocorrelations in the scientific estimates are more pronounced than in the univariate parameters (chain means and chain variances), especially when the proportion of missing cases is moderate to extreme. We observe the worst stationarity in conditions with 75% of cases having missing values. There is no clear effect of the missingness mechanisms. Overall, the autocorrelations reach a plateau when $it \geq 20$ to $30$.  
+
 ```{r echo=FALSE}
 p <- generic_plot(v="ac.max.lambda", name = "AC novel theta")
 p %>% plotly::ggplotly() 
 ```
 
+Autocorrelations in the novel parameter show a similar trend to the autocorrelations in the scientific estimates. Around $it \geq 20$ is required before trending in this parameter diminishes.
 
-
-The next four plots show r hat values with different thetas
+The next four plots show the $\widehat{R}$ in the different parameters.
 
 ```{r echo=FALSE}
 p <- generic_plot(v="r.hat.max.mu.Y", name = "R hat chain means")
