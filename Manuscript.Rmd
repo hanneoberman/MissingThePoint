@@ -2,7 +2,9 @@
 title: "Missing The Point"
 author: "Hanne Oberman"
 date: "7-9-2020"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 bibliography: ref.bib
 ---
 
@@ -98,7 +100,7 @@ We propose a novel multivariate parameter to check for non-convergence in iterat
 
 We investigate non-convergence in iterative imputation through model-based simulation in R (version 4.0.2; R Core Team 2020). We provide a summary of the simulation set-up in Algorithm 1; the complete script and technical details are available from [github.com/hanneoberman/MissingThePoint](https://github.com/hanneoberman/MissingThePoint).
 
-Algorithm 1: simulation set-up (pseudo-code)
+*Algorithm 1: simulation set-up (pseudo-code)*
 
     for each simulation repetition (1:1000)
       1. simulate complete data
@@ -172,28 +174,28 @@ The next four plots show the autocorrelations in each parameter plotted against 
 
 ```{r echo=FALSE}
 p <- generic_plot(v="ac.max.mu.Y", name = "AC chain means")
-p %>% plotly::ggplotly()
+p # %>% plotly::ggplotly()
 ```
 
 This plot shows that irrespective of the missingness condition, autocorrelation in the chain means decreases rapidly until $it \geq 6$. This means that there is some initial trending within chains, but the stationarity does not improve substantively after the first few iterations.
 
 ```{r echo=FALSE}
 p <- generic_plot(v="ac.max.sigma.Y", name = "AC chain variances")
-p %>% plotly::ggplotly() 
+p # %>% plotly::ggplotly() 
 ```
 
 Autocorrelations in the chain variances do not show a systematic effect of the missingness conditions either. The number of iterations that is required to reach non-improving autocorrelations is somewhat more ambiguous, but roughly when $it \geq 10$.
 
 ```{r echo=FALSE}
 p <- generic_plot(v="ac.max.qhat", name = "AC scientific estimate")
-p %>% plotly::ggplotly() 
+p # %>% plotly::ggplotly() 
 ```
 
 We see that the autocorrelations in the scientific estimates are more pronounced than in the univariate parameters (chain means and chain variances), especially when the proportion of missing cases is moderate to extreme. We observe the worst stationarity in conditions with 75% of cases having missing values. There is no clear effect of the missingness mechanisms. Overall, the autocorrelations reach a plateau when $it \geq 20$ to $30$.  
 
 ```{r echo=FALSE}
 p <- generic_plot(v="ac.max.lambda", name = "AC novel theta")
-p %>% plotly::ggplotly() 
+p # %>% plotly::ggplotly() 
 ```
 
 Autocorrelations in the novel parameter show a similar trend to the autocorrelations in the scientific estimates. Around $it \geq 20$ is required before trending in this parameter diminishes.
@@ -202,28 +204,28 @@ The next four plots show the $\widehat{R}$ in the different parameters.
 
 ```{r echo=FALSE}
 p <- generic_plot(v="r.hat.max.mu.Y", name = "R hat chain means")
-p %>% plotly::ggplotly() 
+p # %>% plotly::ggplotly() 
 ```
 
 In this plot we observe that $\widehat{R}$ in the chain means generally decreases as a function of the number of iterations---with the exception of an initial increase when $3 < it < 5$. There is no apparent differentiation between the missingness conditions. The mixing between chain means generally improves until $it \geq 30$ to $40$. 
 
 ```{r echo=FALSE}
 p <- generic_plot(v="r.hat.max.sigma.Y", name = "R hat chain variances")
-p %>% plotly::ggplotly() 
+p # %>% plotly::ggplotly() 
 ```
 
 The mixing between chain variances mimics the mixing between chain means almost perfectly. Irrespective of the missingness condition, the $\widehat{R}$-values taper off around $it \geq 30$. 
 
 ```{r echo=FALSE}
 p <- generic_plot(v="r.hat.max.qhat", name = "R hat scientific estimate")
-p %>% plotly::ggplotly() 
+p # %>% plotly::ggplotly() 
 ```
 
 With the scientific estimate as parameter we observe very similar $\widehat{R}$-values again. We do, however, see some differentiation between missingness conditions. Conditions with 75% of cases being incomplete show more extreme non-mixing. The overall trend remains the same: about 30 iterations are required before mixing stops improving substantially.
 
 ```{r echo=FALSE}
 p <- generic_plot(v="r.hat.max.lambda", name = "R hat novel theta")
-p %>% plotly::ggplotly() 
+p # %>% plotly::ggplotly() 
 ```
 
 $\widehat{R}$-values in the chains of the novel parameter show a trend similar to the chain means and chain variances. [add something about conditions??]
@@ -235,7 +237,7 @@ $\widehat{R}$-values in the chains of the novel parameter show a trend similar t
 ```{r echo=FALSE}
 p <- generic_plot(v = "est", name = "Bias in regression estimate") + 
   list(geom_hline(yintercept = 0, color = "grey")) 
-p %>% plotly::ggplotly()
+p # %>% plotly::ggplotly()
 ```
 
 Bias in estimate depends mostly on the amount of missingness (less info to estimate the relation??). Overall 75% incomplete cases performs the worst, but is stable for $t \geq 6$.
@@ -245,7 +247,7 @@ Bias in estimate depends mostly on the amount of missingness (less info to estim
 ```{r echo=FALSE}
 p <- generic_plot( v ="cov", name = "Coverage rate") + 
   list(geom_hline(yintercept = 0.95, color = "grey"))
-p %>% plotly::ggplotly()
+p # %>% plotly::ggplotly()
 
 # p <- generic_plot( v ="cov", name = "Coverage rate") + 
 #   list(geom_hline(yintercept = 0.95, color = "grey")) +
@@ -257,7 +259,7 @@ Cov is more or less fine, except for MNAR with only 0.05% incomplete cases --\> 
 
 ```{r echo=FALSE}
 p <- generic_plot(v="CIW", name = "CI width") 
-p %>% plotly::ggplotly()
+p # %>% plotly::ggplotly()
 ```
 
 CIW clearly determined by the proportion of incomplete cases. Worst for p=0.95, then stable after it 7.
@@ -265,7 +267,7 @@ CIW clearly determined by the proportion of incomplete cases. Worst for p=0.95, 
 ```{r echo=FALSE}
 p <- generic_plot(v="rsq", name = "Bias in coefficient of determination") +
   list(geom_hline(yintercept = 0, color = "grey"))
-p %>% plotly::ggplotly()
+p # %>% plotly::ggplotly()
 ```
 
 Magnitude of the bias in $r^2$ perfectly follows the missingness mechanisms: least bias for MCAR, most for MNAR. Worst effect of non-convergence for $p=0.95$, MNAR, but stable from it=5.
