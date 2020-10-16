@@ -205,22 +205,30 @@ p <- generic_plot(v="r.hat.max.mu.Y", name = "R hat chain means")
 p %>% plotly::ggplotly() 
 ```
 
+In this plot we observe that $\widehat{R}$ in the chain means generally decreases as a function of the number of iterations---with the exception of an initial increase when $3 < it < 5$. There is no apparent differentiation between the missingness conditions. The mixing between chain means generally improves until $it \geq 30$ to $40$. 
+
 ```{r echo=FALSE}
 p <- generic_plot(v="r.hat.max.sigma.Y", name = "R hat chain variances")
 p %>% plotly::ggplotly() 
 ```
+
+The mixing between chain variances mimics the mixing between chain means almost perfectly. Irrespective of the missingness condition, the $\widehat{R}$-values taper off around $it \geq 30$. 
 
 ```{r echo=FALSE}
 p <- generic_plot(v="r.hat.max.qhat", name = "R hat scientific estimate")
 p %>% plotly::ggplotly() 
 ```
 
+With the scientific estimate as parameter we observe very similar $\widehat{R}$-values again. We do, however, see some differentiation between missingness conditions. Conditions with 75% of cases being incomplete show more extreme non-mixing. The overall trend remains the same: about 30 iterations are required before mixing stops improving substantially.
+
 ```{r echo=FALSE}
 p <- generic_plot(v="r.hat.max.lambda", name = "R hat novel theta")
 p %>% plotly::ggplotly() 
 ```
 
-These rhat plots all show some initialization before the fifth iteration: is rhat usefull before that??
+$\widehat{R}$-values in the chains of the novel parameter show a trend similar to the chain means and chain variances. [add something about conditions??]
+
+[These rhat plots all show some initialization before the fifth iteration: is rhat usefull before that??]
 
 ### Performance Measures
 
