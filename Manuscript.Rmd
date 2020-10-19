@@ -3,8 +3,9 @@ title: "Missing The Point"
 author: "Hanne Oberman"
 date: "7-9-2020"
 output:
-  html_document: default
+  word_document: default
   pdf_document: default
+  html_document: default
 bibliography: ref.bib
 ---
 
@@ -16,7 +17,7 @@ library(mice)
 load("Data/results_25_75.Rdata")
 
 # sim results plotting function
-generic_plot <- function(v, name, ...){
+simulation_plot <- function(v, name, ...){
   results %>%
     mutate(
       p = factor(p, levels = c(0.25, 0.5, 0.75), labels = c("25%", "50%", "75%")),
@@ -58,9 +59,15 @@ generic_plot <- function(v, name, ...){
 
 # Missing The Point: Non-Convergence in Iterative Imputation Algorithms
 
+*Notation in this manuscript: *
+
+- square brackets are comments for myself/stuff I need to review
+
+- bullet points are things I need to expand
+
 ## Abstract
 
-Iterative imputation is a popular tool to accommodate the ubiquitous problem of missing data. While it is widely accepted that this technique can yield valid inferences, these inferences all rely on algorithmic convergence. Our study provides insight into identifying non-convergence in iterative imputation algorithms, since there is no consensus on how to evaluate the convergence properties currently. We found that--in the cases considered--inferential validity was achieved after five to ten iterations, much earlier than indicated by diagnostic methods. We conclude that it never hurts to iterate longer, but such calculations hardly bring added value.
+Iterative imputation is a popular tool to accommodate the ubiquitous problem of missing data. While it is widely accepted that this technique can yield valid inferences, these inferences all rely on algorithmic convergence. Our study provides insight into identifying non-convergence in iterative imputation algorithms since there is no consensus on how to evaluate the convergence properties currently. We found that--in the cases considered--inferential validity was achieved after five to ten iterations, much earlier than indicated by diagnostic methods. We conclude that it never hurts to iterate longer, but such calculations hardly bring added value.
 
 ## Intro
 
@@ -70,9 +77,9 @@ With iterative imputation, the validity of the inference depends on the state-sp
 
 Identifying non-convergence through visual inspection may be undesirable for several reasons: 1) it may be challenging to the untrained eye, 2) only severely pathological cases of non-convergence may be diagnosed, and 3) there is not an objective measure that quantifies convergence (Van Buuren, 2018, 6.5.2). Therefore, a quantitative diagnostic method to identify non-convergence would be preferred.
 
-In this paper we explore diagnostic methods for iterative imputation algorithms. For reasons of brevity, we focus on the iterative imputation algorithm implemented in the popular `mice` package [@mice] in `R` [@R]. We consider two non-convergence identifiers for iterative algorithms: autocorrelation (conform Lynch, 2007, p. 147) and potential scale reduction factor $\widehat{R}$ (conform Vehtari et al., 2019, p. 5). Aside from the usual parameters to monitor---chain means and chain variances---we also investigate convergence in the multivariate state-space of the algorithm.
+In this paper, we explore diagnostic methods for iterative imputation algorithms. For reasons of brevity, we focus on the iterative imputation algorithm implemented in the popular `mice` package [@mice] in `R` [@R]. We consider two non-convergence identifiers for iterative algorithms: autocorrelation (conform Lynch, 2007, p. 147) and potential scale reduction factor $\widehat{R}$ (conform Vehtari et al., 2019, p. 5). Aside from the usual parameters to monitor---chain means and chain variances---we also investigate convergence in the multivariate state-space of the algorithm.
 
-We propose a novel multivariate parameter to check for non-convergence in iterative algorithms. Our aim is to show which method is the most informative about non-convergence in iterative imputation. [explain that method = parameter + diagnostic + interpretation]
+We propose a novel multivariate parameter to check for non-convergence in iterative algorithms. We aim to show which method is the most informative about non-convergence in iterative imputation [explain that method = parameter + diagnostic + interpretation].
 
 <!-- - Missing data has to be accommodated, usually filled in -->
 
@@ -84,23 +91,27 @@ We propose a novel multivariate parameter to check for non-convergence in iterat
 
 ## Identifying non-convergence
 
+
 -   Iterative imputation is a sort of MCMC algorithm, so it makes sense to investigate non-convergence in a similar fashion to typical MCMC algorithms.
 
--   What does non-convergence look like? --\> non-stat + non-mix in a certain parameter, e.g., chain means.
+-   What does non-convergence look like? --\> non-stationarity + non-mixing in a certain parameter, e.g., chain means.
 
--   What are the consequences? --\> bias, under-coverage --\> Refer to van Buuren (2018) instead of reproducing this
+-   What are the consequences? --\> bias, under-coverage --\> refer to van Buuren (2018) instead of reproducing this
 
--   Existing non-convergence identifiers for MCMC algorithms are not all applicable, e.g. N\_eff is estimated using varcov matrix of the set of samples, while this is not the case in it im per se.
+<!-- -   Existing non-convergence identifiers for MCMC algorithms are not all applicable, e.g. N\_eff is estimated using the variance-covariance matrix of the set of samples, while this is not the case in iterative imputation per se. -->
 
--   We consider autocorr and rhat, and monitor four parameters: chain means, chain variances, the scientific estimand, and lambda.
+-   We consider autocorrelation and rhat, and monitor four parameters: chain means, chain variances, a scientific estimate, and lambda.
 
-## Simulation
+- Explain lambda
+
+
+## Simulation Set-Up
 
 <!-- The aim of the simulation study is to determine the impact of non-convergence on the validity of statistical inferences, and to assess whether non-convergence may be detected using several diagnostic methods. Inferential validity is reached when estimates are both  unbiased and have nominal coverage across simulation repetitions (nsim = 1000). -->
 
 We investigate non-convergence in iterative imputation through model-based simulation in R (version 4.0.2; R Core Team 2020). We provide a summary of the simulation set-up in Algorithm 1; the complete script and technical details are available from [github.com/hanneoberman/MissingThePoint](https://github.com/hanneoberman/MissingThePoint).
 
-*Algorithm 1: simulation set-up (pseudo-code)*
+**Algorithm 1: simulation set-up (pseudo-code)**
 
     for each simulation repetition (1:1000)
       1. simulate complete data
@@ -118,11 +129,11 @@ We investigate non-convergence in iterative imputation through model-based simul
 
 ### Aims
 
-Our aim is to assess the impact of non-convergence on the validity of scientific estimates obtained using `mice` [@mice]. Inferential validity is reached when estimates are both  unbiased and have nominal coverage across simulation repetitions ($n_{sim} = 1000$). To induce non-convergence we terminate the iterative algorithm at different imputation chain lengths ($n_{it} = 1, 2, ..., 50$). We differentiate between nine different missingness scenarios: three missingness mechanisms versus three proportions of incomplete cases [remove here if already defined above/below??].
+We aim to assess the impact of non-convergence on the validity of scientific estimates obtained using `mice` [@mice]. Inferential validity is reached when estimates are both  unbiased and have nominal coverage across simulation repetitions ($n_{sim} = 1000$). To induce non-convergence we terminate the iterative algorithm at different imputation chain lengths ($n_{it} = 1, 2, ..., 50$). We differentiate between nine different missingness scenarios: three missingness mechanisms versus three proportions of incomplete cases [remove here if already defined above/below??].
 
 ### Data generating mechanism
 
-Data are generated in each simulation repetition for a sample of $n_{obs} = 1000$ cases, before inducing missingness. Let the complete set be three multivariately normal random variables
+Data are generated in each simulation repetition for a complete set of $n_{obs} = 1000$ cases (i.e., before inducing missingness). We define three multivariately normal random variables, let
 
 $$
 \begin{pmatrix}
@@ -145,7 +156,7 @@ X_2
 \end{bmatrix}.
 $$ 
 
-The complete set is amputed according to the nine missingness conditions. We use a $3 \times 3$ factorial design consisting of three missingness mechanisms and three proportions of incomplete cases. [Briefly describe MCAR, MAR, MNAR + 25, 50, 75% of cases incomplete (not using 5% anymore, because according to Vink, n.d., 25% is more representative of missing data problems in the social sciences). And add the `ampute` function?]
+[Add mvtnorm package here??] The complete set is amputed according to nine missingness conditions. We use a $3 \times 3$ factorial design consisting of three missingness mechanisms and three proportions of incomplete cases. [Briefly describe MCAR, MAR, MNAR + 25, 50, 75% of cases incomplete (not using 5% anymore, because according to Vink, n.d., 25% is more representative of missing data problems in the social sciences). And add the `ampute` function?]
 
 ### Estimands
 
@@ -158,131 +169,131 @@ where $Y'$ is the expected value of the outcome. Our estimands are the regressio
 
 ### Methods
 
-We use a combination of two non-convergence identifiers---autocorrelation and $\widehat{R}$---and four parameters of interest---chain means, chain variances, a scientific estimate, and the novel parameter we propose, $\lambda$.
+We use eight different diagnostic methods to identify non-convergence: a combination of two non-convergence identifiers---autocorrelation and $\widehat{R}$---and four parameters of interest---chain means, chain variances, a scientific estimate, and the novel parameter we propose, $\lambda$.
 
 ### Performance measures
 
-As recommended by @buur18, our performance measures are bias ($E(\bar{Q})-Q$), average confidence interval width ($\bar{Q}_{LL} - \bar{Q}_{UL}$, where $LL$ and $UL$ denote the lower and upper limit of the 95% confidence interval respectively) and empirical coverage rate ($Pr(\bar{Q}_{LL} \geq Q \geq \bar{Q}_{UL})$) of the estimands.
+As recommended by @buur18, our performance measures are bias ($E(\bar{Q})-Q$), average confidence interval width ($E(\bar{Q}_{LL} - \bar{Q}_{UL})$, where $LL$ and $UL$ denote the lower and upper limit of the 95% confidence interval respectively) and empirical coverage rate ($Pr(\bar{Q}_{LL} \geq Q \geq \bar{Q}_{UL})$) of the estimands [or just of the regression estimate?? otherwise add the ciw and cov of r2 too!! and check if definition of ciw is correct].
 
-## Results
+## Simulation Results
 
-We present the results of our simulation study visually because of the many simulation conditions. Within each plot, the results are split according to the missingness conditions (missingness mechanisms as line types, and proportion of incomplete cases as colors).
+The following plots provide an overview of the results for each method and each performance measure, contrasted to the number of iteration in the imputation algorithm. Within the plots, we split the results according to the missingness conditions [missingness mechanisms as line types, and proportion of incomplete cases as colors].
 
-### Non-Convergence Identifiers
+### Diagnostic Methods
 
-The next four plots show the autocorrelations in each parameter plotted against the number of iterations. 
+<!-- The next four plots show the autocorrelations in each parameter plotted against the number of iterations.  -->
 
 ```{r echo=FALSE}
-p <- generic_plot(v="ac.max.mu.Y", name = "AC chain means")
+p <- simulation_plot(v="ac.max.mu.Y", name = "Autocorrelation chain means")
 p # %>% plotly::ggplotly()
 ```
 
-This plot shows that irrespective of the missingness condition, autocorrelation in the chain means decreases rapidly until $it \geq 6$. This means that there is some initial trending within chains, but the stationarity does not improve substantively after the first few iterations.
+In this plot, our diagnostic method is the amount of autocorrelation in the chain means. We can interpret this as the extent to which the average imputed value trends across iterations. We see that autocorrelation in the chain means rapidly decreases until $it \geq 6$. This means that there is some initial trending within chains, but stationarity does not improve substantively after the first few iterations. These results hold irrespective of the missingness condition.
 
 ```{r echo=FALSE}
-p <- generic_plot(v="ac.max.sigma.Y", name = "AC chain variances")
+p <- simulation_plot(v="ac.max.sigma.Y", name = "Autocorrelation chain variances")
 p # %>% plotly::ggplotly() 
 ```
 
-Autocorrelations in the chain variances do not show a systematic effect of the missingness conditions either. The number of iterations that is required to reach non-improving autocorrelations is somewhat more ambiguous, but roughly when $it \geq 10$.
+Autocorrelation in the chain variances shows something similar. The number of iterations that is required to reach non-improving autocorrelations is somewhat more ambiguous than for chain means, but generally when $it \geq 10$. We do not observe a systematic effect of the missingness conditions here either. 
 
 ```{r echo=FALSE}
-p <- generic_plot(v="ac.max.qhat", name = "AC scientific estimate")
+p <- simulation_plot(v="ac.max.qhat", name = "Autocorrelation scientific estimate")
 p # %>% plotly::ggplotly() 
 ```
 
-We see that the autocorrelations in the scientific estimates are more pronounced than in the univariate parameters (chain means and chain variances), especially when the proportion of missing cases is moderate to extreme. We observe the worst stationarity in conditions with 75% of cases having missing values. There is no clear effect of the missingness mechanisms. Overall, the autocorrelations reach a plateau when $it \geq 20$ to $30$.  
+There is more autocorrelation in the scientific estimates than in the univariate parameters (chain means and chain variances). We observe the highest autocorrelations in conditions where 75% of cases are incomplete. Overall, the autocorrelations reach a plateau when $it \geq 20$ to $30$. There is no clear effect of the missingness mechanisms.  
 
 ```{r echo=FALSE}
-p <- generic_plot(v="ac.max.lambda", name = "AC novel theta")
+p <- simulation_plot(v="ac.max.lambda", name = "Autocorrelation novel theta")
 p # %>% plotly::ggplotly() 
 ```
 
-Autocorrelations in the novel parameter show a similar trend to the autocorrelations in the scientific estimates. Around $it \geq 20$ is required before trending in this parameter diminishes.
+The autocorrelation in the novel parameter exhibits a similar trend to the autocorrelation in the scientific estimates. Trending in this parameter diminishes when $it \geq 20$.
 
-The next four plots show the $\widehat{R}$ in the different parameters.
+<!-- The next four plots show the $\widehat{R}$ in the different parameters. -->
 
 ```{r echo=FALSE}
-p <- generic_plot(v="r.hat.max.mu.Y", name = "R hat chain means")
+p <- simulation_plot(v="r.hat.max.mu.Y", name = "R hat chain means")
 p # %>% plotly::ggplotly() 
 ```
 
-In this plot we observe that $\widehat{R}$ in the chain means generally decreases as a function of the number of iterations---with the exception of an initial increase when $3 < it < 5$. There is no apparent differentiation between the missingness conditions. The mixing between chain means generally improves until $it \geq 30$ to $40$. 
+We observe that $\widehat{R}$ in the chain means generally decreases as a function of the number of iterations. An exception to this observation is the initial increase when $3 < it < 5$. According to these results, the mixing between chain means generally improves until $it \geq 30$ to $40$. There is no apparent differentiation between the missingness conditions. 
 
 ```{r echo=FALSE}
-p <- generic_plot(v="r.hat.max.sigma.Y", name = "R hat chain variances")
+p <- simulation_plot(v="r.hat.max.sigma.Y", name = "R hat chain variances")
 p # %>% plotly::ggplotly() 
 ```
 
 The mixing between chain variances mimics the mixing between chain means almost perfectly. Irrespective of the missingness condition, the $\widehat{R}$-values taper off around $it \geq 30$. 
 
 ```{r echo=FALSE}
-p <- generic_plot(v="r.hat.max.qhat", name = "R hat scientific estimate")
+p <- simulation_plot(v="r.hat.max.qhat", name = "R hat scientific estimate")
 p # %>% plotly::ggplotly() 
 ```
 
-With the scientific estimate as parameter we observe very similar $\widehat{R}$-values again. We do, however, see some differentiation between missingness conditions. Conditions with 75% of cases being incomplete show more extreme non-mixing. The overall trend remains the same: about 30 iterations are required before mixing stops improving substantially.
+With the scientific estimate as parameter we observe very similar $\widehat{R}$-values again. We do, however, see some differentiation between missingness conditions. Conditions where 75% of the cases are incomplete show more extreme non-mixing. The overall trend remains the same: about 30 iterations are required before mixing stops improving substantially.
 
 ```{r echo=FALSE}
-p <- generic_plot(v="r.hat.max.lambda", name = "R hat novel theta")
+p <- simulation_plot(v="r.hat.max.lambda", name = "R hat novel theta")
 p # %>% plotly::ggplotly() 
 ```
 
 $\widehat{R}$-values in the chains of the novel parameter show a trend similar to the chain means and chain variances. [add something about conditions??]
 
-[These rhat plots all show some initialization before the fifth iteration: is rhat usefull before that??]
+[These rhat plots all show some initialization before the fifth iteration: is rhat useful before that??]
 
 ### Performance Measures
 
 ```{r echo=FALSE}
-p <- generic_plot(v = "est", name = "Bias in regression estimate") + 
+p <- simulation_plot(v = "est", name = "Bias in regression estimate") + 
   list(geom_hline(yintercept = 0, color = "grey")) 
 p # %>% plotly::ggplotly()
 ```
 
-Bias in estimate depends mostly on the amount of missingness (less info to estimate the relation??). Overall 75% incomplete cases performs the worst, but is stable for $t \geq 6$.
+We see that within a few iterations the average bias approaches zero. When $it \geq 6$, even the worst-performing conditions (e.g., with a proportion of incomplete cases of 75%) produce stable, non-improving estimates [regression coefficient is underestimated because there is less info to estimate the relation??]. 
 
 <!-- Update with different CI computation, see <https://stefvanbuuren.name/fimd/sec-evaluation.html#sec:quantifyingbias> -->
 
 ```{r echo=FALSE}
-p <- generic_plot( v ="cov", name = "Coverage rate") + 
+p <- simulation_plot( v ="cov", name = "Coverage rate") + 
   list(geom_hline(yintercept = 0.95, color = "grey"))
 p # %>% plotly::ggplotly()
 
-# p <- generic_plot( v ="cov", name = "Coverage rate") + 
+# p <- simulation_plot( v ="cov", name = "Coverage rate") + 
 #   list(geom_hline(yintercept = 0.95, color = "grey")) +
 #   ylim(0.85, 1)
 
 ```
 
-Cov is more or less fine, except for MNAR with only 0.05% incomplete cases --\> due to bias in the estimate in combination with very narrow CI (see CIW!). However, all stable after it=3??
+Nominal coverage is quickly reached. After just three iterations, the coverage rates are non-improving in every missingness condition [but MNAR with 5% incomplete cases does not reach nominal coverage --\> due to bias in the estimate in combination with very narrow CI (see CIW!)].
 
 ```{r echo=FALSE}
-p <- generic_plot(v="CIW", name = "CI width") 
+p <- simulation_plot(v="CIW", name = "Average CI width") 
 p # %>% plotly::ggplotly()
 ```
 
-CIW clearly determined by the proportion of incomplete cases. Worst for p=0.95, then stable after it 7.
+The average confidence interval width decreases quickly with every added iteration until a stable plateau is reached. Depending on the proportion of incomplete cases this takes up-to $it \geq 9$. 
 
 ```{r echo=FALSE}
-p <- generic_plot(v="rsq", name = "Bias in coefficient of determination") +
+p <- simulation_plot(v="rsq", name = "Bias in coefficient of determination") +
   list(geom_hline(yintercept = 0, color = "grey"))
 p # %>% plotly::ggplotly()
 ```
+Equivalent to the bias in the regression estimate, the bias in the coefficient of determination tapers off within a couple of iterations. We observe stable estimates in all conditions when $it \geq 6$ [interpret the over-estimation in MNAR+75% condition?].
 
-Magnitude of the bias in $r^2$ perfectly follows the missingness mechanisms: least bias for MCAR, most for MNAR. Worst effect of non-convergence for $p=0.95$, MNAR, but stable from it=5.
+<!-- Magnitude of the bias in $r^2$ perfectly follows the missingness mechanisms: least bias for MCAR, most for MNAR. Worst effect of non-convergence for $p=0.95$, MNAR, but stable from it=6. -->
 
 
 ## Discussion
 
-- need for multivar parameters!!
+-   Convergence diagnostics keep improving substantially until it = 20-30
 
+-   Performance measures do not improve after it = 9
 
--   Estimates etc do not improve after it = 7
+-  [methodological explanation is that rhat and ac have a lag (few it to inform your statistic) --\> will always indicate convergence slower than inferential validity is reached]
 
--   Convergence diagnostics keep improving, but are all stable after 20-30 it
-
--   Univariate thetas do not differentiate between missingness mechanisms or proportions of incomplete cases
+-   Univariate thetas may under-estimate non-convergence. 
 
 -   Determining non-stationarity with lambda is more difficult than with qhat :(
 
@@ -304,13 +315,8 @@ Magnitude of the bias in $r^2$ perfectly follows the missingness mechanisms: lea
 
 <!-- ``` -->
 
-methodological explanation is that rhat and ac have a lag (few it to inform your statistic) --\> will always indicate conv slower than the est
+- Idea: calculate rhat for each block of 5 it
 
-calc rhat and cov for each block of 5 it
-
-disc: conf val is likely to happen much sooner
-
-as soon as we start down-weighting the first few it from the calc, the memory effect would
 
 ## Example data
 
