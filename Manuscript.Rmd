@@ -3,9 +3,9 @@ title: "Missing The Point"
 author: "Hanne Oberman"
 date: "7-9-2020"
 output:
-  word_document: default
-  pdf_document: default
   html_document: default
+  pdf_document: default
+  word_document: default
 bibliography: ref.bib
 ---
 
@@ -15,6 +15,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(mice)
 load("Data/results_25_75.Rdata")
+# load data
+load("Data/example.Rdata")
+load("Data/example_mids.Rdata")
 
 # sim results plotting function
 simulation_plot <- function(v, name, ...){
@@ -55,6 +58,16 @@ simulation_plot <- function(v, name, ...){
   #   '#AA3377'  #maroon
   #   ))
 }
+
+# plot each var of example data
+casestudy_plot <- function(v, name, ...){
+ggplot(example, aes(x = .data[["it"]], y = .data[[v]])) +
+  geom_line(na.rm = TRUE) +
+    labs(x = "Iteration number",
+         y = name) +
+  theme_classic()
+}
+
 ```
 
 # Missing The Point: Non-Convergence in Iterative Imputation Algorithms
@@ -287,6 +300,11 @@ Equivalent to the bias in the regression estimate, the bias in the coefficient o
 
 ## Discussion
 
+With this study, we show that iterative imputation algorithms can yield correct outcomes, even when a converged state has not yet formally been reached. Any further iterations would then burn computational resources without improving the statistical inferences. 
+
+Our study found that---in the cases considered---inferential validity was achieved after five to ten iterations, much earlier than indicated by the non-convergence identifiers. Of course, it never hurts to iterate longer, but such calculations hardly bring added value.
+
+
 -   Convergence diagnostics keep improving substantially until it = 20-30
 
 -   Performance measures do not improve after it = 9
@@ -318,28 +336,44 @@ Equivalent to the bias in the regression estimate, the bias in the coefficient o
 - Idea: calculate rhat for each block of 5 it
 
 
-## Example data
+## Case Study
 
-```{r}
-# load data
-load("Data/example.Rdata")
-load("Data/example_mids.Rdata")
+- We use real data: the `boys` dataset from the `mice` package
 
-# plot each var of example data
-plotfun <- function(v, ...){
-ggplot(example, aes(x = .data[["it"]], y = .data[[v]])) +
-  geom_line() +
-  theme_classic()
-}
+- We are interested in predicting age from the other variables, in particular in the regression coefficient of `hgt`
 
-plotfun(v="est")
-plotfun(v="ac.max.qhat") #+ list(scale_y_continuous(limits = c(0.65,1)))
-plotfun(v="ac.max.lambda")
-plotfun(v="r.hat.max.sigma.hgt")+list(geom_hline(yintercept = 1.2, color = "grey"), scale_y_continuous(limits = c(1,2)))
-plotfun(v="r.hat.max.qhat")+list(geom_hline(yintercept = 1.2, color = "grey"), scale_y_continuous(limits = c(1,2)))
-plotfun(v="r.hat.max.lambda")+list(geom_hline(yintercept = 1.2, color = "grey"), scale_y_continuous(limits = c(1,2)))
+- We compare non-convergence identified using visual inspection versus rhat in the chain variances, scientific estimate and lambda
 
-plot(mids)
+
+```{r echo=FALSE}
+# autocorrelation plots (not used)
+# casestudy_plot(v="ac.max.qhat") #+ list(scale_y_continuous(limits = c(0.65,1)))
+# casestudy_plot(v="ac.max.lambda")
+```
+
+```{r echo=FALSE}
+p <- plot(mids)
+p[1:2,1] # %>% plotly::ggplotly()
+```
+
+```{r echo=FALSE}
+# p <- casestudy_plot(v="est", name = "Regression estimate")
+# p # %>% plotly::ggplotly()
+```
+
+```{r echo=FALSE}
+p <- casestudy_plot(v="r.hat.max.sigma.hgt", name = "Rhat chain variance")+list(geom_hline(yintercept = 1.2, color = "grey"), scale_y_continuous(limits = c(1,2)))
+p # %>% plotly::ggplotly()
+```
+
+```{r echo=FALSE}
+p <- casestudy_plot(v="r.hat.max.qhat", name = "Rhat regression estimate")+list(geom_hline(yintercept = 1.2, color = "grey"), scale_y_continuous(limits = c(1,2)))
+p # %>% plotly::ggplotly()
+```
+
+```{r echo=FALSE}
+p <- casestudy_plot(v="r.hat.max.lambda", name = "Rhat lambda")+list(geom_hline(yintercept = 1.2, color = "grey"), scale_y_continuous(limits = c(1,2)))
+p # %>% plotly::ggplotly()
 ```
 
 # References (incomplete)
