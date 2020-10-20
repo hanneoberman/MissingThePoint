@@ -344,7 +344,9 @@ Our study found that---in the cases considered---inferential validity was achiev
 
 - We are interested in predicting age from the other variables, in particular in the regression coefficient of `hgt`
 
-- We compare non-convergence identified using visual inspection versus rhat in the chain variances, scientific estimate and lambda
+- We compare non-convergence identified using visual inspection versus rhat in the chain variances, scientific estimate and lambda.
+
+- The figures show results of a `mice` run with 30 iterations but otherwise default settings.
 
 
 ```{r echo=FALSE}
@@ -362,7 +364,7 @@ From the traceplot of the chain means it seems that mixing improves up-to 20 ite
 
 ```{r echo=FALSE}
 # p <- casestudy_plot(v="est", name = "Regression estimate")
-# p # %>% plotly::ggplotly()
+# p %>% plotly::ggplotly()
 ```
 
 ```{r echo=FALSE}
@@ -374,6 +376,8 @@ p <- casestudy_plot(v="r.hat.max.mu.hgt", name = "Rhat chain means") +
 p # %>% plotly::ggplotly()
 ```
 
+This figure shows that 36 iterations are required before the $\widehat{R}$-values of the chain means drop below the threshold for non-convergence.
+
 ```{r echo=FALSE}
 p <-
   casestudy_plot(v = "r.hat.max.qhat", name = "Rhat regression estimate") +
@@ -383,6 +387,8 @@ p <-
 p # %>% plotly::ggplotly()
 ```
 
+The scientific estimate reaches the threshold much sooner, when $it=15$.
+
 ```{r echo=FALSE}
 p <- casestudy_plot(v = "r.hat.max.lambda", name = "Rhat lambda") +
   list(geom_hline(yintercept = 1.2, color = "grey")#,
@@ -390,5 +396,9 @@ p <- casestudy_plot(v = "r.hat.max.lambda", name = "Rhat lambda") +
        )
 p # %>% plotly::ggplotly()
 ```
+
+According to the $\widehat{R}$-values of the novel parameter, at least 25 iterations are required.
+
+[Is this a nice example? Why is convergence so slow? Don't the defaults work? Is this the bmi+wgt+wgt problem? Maybe find an easier problem?]
 
 # References (incomplete)
