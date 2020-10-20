@@ -8,7 +8,7 @@ setup_example <- function(seed){
   
   # parameters
   n_imp <<- 5
-  n_it <<- 25
+  n_it <<- 30
   mids <<- qhats <<- lambdas <<- NULL  
 }
 
