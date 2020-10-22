@@ -47,6 +47,7 @@ impute <-
     lambda <- mild %>%
       purrr::map_dbl(., ~ {
         princomp(., cor = TRUE) %>% .$sdev %>% .[1] %>% . ^ 2 #first eigenvalue of the varcovar matrix
+        # svd(.) %>% .$d %>% .[1]
       })
     
     # save for each simulation condition

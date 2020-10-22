@@ -8,7 +8,7 @@ source("R/preprocess.R")
 source("R/ComputeDiagnostics.R")
 setup(seed = 1111)
 it_total <- 50
-n_sim <- 100
+n_sim <- 1000
 
 # create simulation function
 simulate <- function(m_mech, p_inc, amp_pat, it_total, n_imp, ...){

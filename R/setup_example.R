@@ -8,8 +8,8 @@ setup_example <- function(seed){
   
   # parameters
   n_imp <<- 5
-  n_it <<- 50
-  mids <<- qhats <<- lambdas <<- NULL  
+  n_it <<- 20
+  mids <<- qhats <<- lambdas <<- svs <<- NULL  
 }
 
 # other functions to load
@@ -49,18 +49,29 @@ get_diagnostics <- function(parameters) {
 }
 
 impute_once <- function(iteration, ...) {
+  # specify correct imputation model and predictor matrix
+  meth <- make.method(boys)
+  meth["bmi"] <- "~ I(wgt / (hgt / 100)^2)"
+  pred <- make.predictorMatrix(boys)
+  pred[c("hgt", "wgt"), "bmi"] <- 0
+  # impute once to create mids object
   if(is.null(mids)){
-    mids <<- mice(boys, m = n_imp, maxit = 1, printFlag = FALSE)
+    mids <<- mice(boys, 
+                  meth = meth, 
+                  pred = pred, 
+                  m = n_imp, 
+                  maxit = 1, 
+                  printFlag = FALSE)
   }
   else {
     mids <<- mice.mids(mids, printFlag = FALSE)
   }
+  # extract estimates and diagnostics
   mira <- mids %>% mice::lm.mids(age ~ ., data = .) 
   mipo <- mira %>%
     mice::pool() %>%
     summary(., conf.int = TRUE)
   mild <- mids %>% mice::complete("all")
-  
   qhat <- 
     map_dbl(mild, ~ {
       lm(formula = age ~ ., data = .) %>% .$coefficients %>% .[2]
@@ -68,9 +79,16 @@ impute_once <- function(iteration, ...) {
   lambda <- mild %>%
     purrr::map_dbl(., ~ {
       dplyr::mutate(., dplyr::across(dplyr::everything(), ~as.numeric(.))) %>% 
+        # svd(.) %>% .$d %>% .[1]
         princomp(., cor = TRUE) %>% .$sdev %>% .[1] %>% . ^ 2 #first eigenvalue of the varcovar matrix
     })
+  sv <- mild %>%
+    purrr::map_dbl(., ~ {
+      dplyr::mutate(., dplyr::across(dplyr::everything(), ~as.numeric(.))) %>% 
+        svd(.) %>% .$d %>% .[1]
+    })
   qhats <<- rbind(qhats, data.frame(it = iteration, m = 1:n_imp, qhat = qhat))
+  svs <<- rbind(svs, data.frame(it = iteration, m = 1:n_imp, sv = sv))
   lambdas <<- rbind(lambdas, data.frame(it = iteration, m = 1:n_imp, lambda = lambda))
   
   out <- data.frame(it = iteration, est = mipo[["estimate"]][2])
