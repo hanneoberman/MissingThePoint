@@ -84,6 +84,45 @@ Iterative imputation has become the de facto standard approach to accommodate th
 
 # Intro
 
+## One
+
+- iterative imputation has become the de facto standard approach to accommodate missing data
+
+- the aim is to draw valid inference: to get unbiased, confidence-valid estimates
+
+- the estimates are obtained by separating the missing data problem from the scientific problem
+
+- the missing data problem is solved by imputing (i.e., filling in) the missing values in the incomplete dataset, using an algorithm such as MICE
+
+- then the analysis of scientific interest can be performed on the completed data, which yields the scientific estimates
+
+- to obtain valid estimates, both the missing data problem and the scientific problem should be solved correctly
+
+- one aspect that is often overlooked is the convergence of the algorithm that is used to generate imputations
+
+
+## Two
+
+- there is no consensus on the convergence properties of iterative imputation, and there has not been a systematic study on how to evaluate the convergence of these algorithms
+
+- the current practice is visual inspection, but this may not be adequate because 1, 2, 3 (see original text)
+
+- it is difficult because there is not at single point at which convergence is reached, because the algorithm will produce some fluctuation even after convergence (and a ... distribution may not exist because of univariate modeling of multivariate distribution???)
+
+- therefore, we should look at *non*-convergence
+
+- there are non-convergence identifiers for other iterative algorithms (such as MCMC), but it is not known whether these are appropriate for imputation algorithms as well
+
+
+## Three 
+
+- in this paper, we explore different methods for identifying non-convergence in iterative imputation algorithms
+
+- since the ultimate goal is to have inferential validity, we use this as performance measure in a simulation study: if the estimates are unbiased and confidence-valid, the non-convergence is not influential, apparently
+
+- since we typically don't have the ground truth (to calculate bias and coverage), we develop guidelines for interpreting the non-convergence identifiers in practice 
+
+
 <!-- Iterative imputation has become the de facto standard approach to accommodate missing data problems. With iterative imputation, we 'impute' (i.e., fill in) plausible values in an incomplete dataset. These plausible values are generated using algorithms such as 'MICE' [@mice]. These algorithms sequence through the variables in an incomplete dataset  -->
 
 <!-- Iterative imputation entails using algorithms such as MICE [@mice] to replace missing values by plausible values. These plausible values are sampled from the distribution of each missing entry, and draw a plausible value from this distribution to replace the missing value by. -->
@@ -91,6 +130,8 @@ Iterative imputation has become the de facto standard approach to accommodate th
 <!-- While it is widely accepted that the technique can yield valid inferences under many different missing data circumstances, these inferences all rely on algorithmic convergence. We fill in the missing data by modeling a multivariate distribution for each missing entry. We update dis model by sequencing through the variables See Figure 1. Van Buuren et al. (2006) have shown that just a few iterations maybe sufficient. Most imputation software packages use a default value of five or ten iterations. But how can we know did this is sufficient?  -->
 <!-- There is currently no consensus on how to evaluate the convergence properties of iterative imputation algorithms. Imputation algorithms such as mice are a type of Gibbs sampler. It would does make sense to evaluate the convergence of iterative imputation algorithms using common MSMC non convergence identifiers. This has not been done.  -->
 <!-- With MCMC algorithms there is not a single point at which convergence is reached.  -->
+
+## Original text 
 
 Iterative imputation has become the de facto standard approach to accommodate missing data. With iterative imputation, we 'impute' (i.e., fill in) plausible data values in the place of missing values in an incomplete dataset. We obtain these plausible values by sampling from a distribution that we model for each missing entry and update sequentially. @buur06 have shown that with an iterative imputation algorithm such as 'MICE', just a few iterations are enough to yield unbiased, confidence-valid statistical inferences. 
 
@@ -285,13 +326,6 @@ Equivalent to the bias in the regression estimate, the bias in the coefficient o
 
 <!-- Update with different CI computation, see <https://stefvanbuuren.name/fimd/sec-evaluation.html#sec:quantifyingbias> -->
 
-```{r echo=FALSE}
-# p <- simulation_plot( v ="cov", name = "Coverage rate") + 
-#   list(geom_hline(yintercept = 0.95, color = "grey")) +
-#   ylim(0.85, 1)
-
-```
-
 Nominal coverage is quickly reached (see \@ref(fig:perf)C). After just three iterations, the coverage rates are non-improving in every missingness condition [but MNAR with 5% incomplete cases does not reach nominal coverage --\> due to bias in the estimate in combination with very narrow CI (see CIW!)].
 
 
@@ -350,65 +384,36 @@ Our study found that---in the cases considered---inferential validity was achiev
 
 - The figures show results of a `mice` run with 20 iterations but otherwise default settings.
 
-
-```{r echo=FALSE}
-# autocorrelation plots (not used)
-# casestudy_plot(v="ac.max.qhat") #+ list(scale_y_continuous(limits = c(0.65,1)))
-# casestudy_plot(v="ac.max.lambda")
-```
-
-```{r echo=FALSE}
-# p <- plot(mids)
-# p[1:2,1] # %>% plotly::ggplotly()
-param %>% 
+```{r case, fig.cap = "Case study.", echo=FALSE}
+trace <- param %>% 
   ggplot() + 
   geom_line(aes(x = it, y = mu.hgt, color = as.factor(m))) + 
   theme_classic() + 
   labs(x = "Iteration number",
        y = "Chain mean variable 'hgt'",
        color = "Imputation")
-```
-
-From the traceplot of the chain means it seems that mixing improves up-to 10 iterations, while trending is only apparent in the first three iterations. 
-
-<!-- and there is some trending up-to 20 iterations as well. The chain variances are more or less stationary after 5 iterations, and mixing requires about 20 iterations. -->
-
-```{r echo=FALSE}
-# p <- casestudy_plot(v="est", name = "Regression estimate")
-# p %>% plotly::ggplotly()
-```
-
-```{r echo=FALSE}
-p <- casestudy_plot(v="r.hat.max.mu.hgt", name = "Rhat chain means") + 
-  list(
-    geom_hline(yintercept = 1.2, color = "grey")#, 
-    #scale_y_continuous(limits = c(1,5))
-    )
-p # %>% plotly::ggplotly()
-```
-
-This figure shows that 7 iterations are required before the $\widehat{R}$-values of the chain means drop below the threshold for non-convergence.
-
-```{r echo=FALSE}
-p <-
+means <- casestudy_plot(v="r.hat.max.mu.hgt", name = "Rhat chain means") + 
+  list(geom_hline(yintercept = 1.2, color = "grey"))
+qhats <-
   casestudy_plot(v = "r.hat.max.qhat", name = "Rhat regression estimate") +
-  list(geom_hline(yintercept = 1.2, color = "grey")#,
-       #scale_y_continuous(limits = c(1, 2.5))
-       )
-p # %>% plotly::ggplotly()
+  list(geom_hline(yintercept = 1.2, color = "grey"))
+lambdas <- casestudy_plot(v = "r.hat.max.lambda", name = "Rhat lambda") +
+  list(geom_hline(yintercept = 1.2, color = "grey"))
+(trace + means) / (qhats + lambdas) + plot_layout(guides="collect") + plot_annotation(tag_levels = 'A')
+
 ```
 
-The scientific estimate reaches the threshold much sooner, when $it=14$.
+From the traceplot of the chain means (see \@ref(fig:case)A) it seems that mixing improves up-to 10 iterations, while trending is only apparent in the first three iterations. 
 
-```{r echo=FALSE}
-p <- casestudy_plot(v = "r.hat.max.lambda", name = "Rhat lambda") +
-  list(geom_hline(yintercept = 1.2, color = "grey")#,
-       #scale_y_continuous(limits = c(1, 2.5))
-       )
-p # %>% plotly::ggplotly()
-```
 
-According to the $\widehat{R}$-values of the novel parameter, at least 15 iterations are required.
+
+This figure (\@ref(fig:case)B) shows that 7 iterations are required before the $\widehat{R}$-values of the chain means drop below the threshold for non-convergence.
+
+
+The scientific estimate reaches the threshold much sooner, when $it=14$ (see \@ref(fig:case)C).
+
+
+According to the $\widehat{R}$-values of the novel parameter, at least 15 iterations are required (see \@ref(fig:case)D).
 
 
 # References (incomplete)
