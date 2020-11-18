@@ -80,7 +80,7 @@ ggplot(d, aes(x = .data[["it"]], y = .data[[v]])) +
 
 # Abstract
 
-Iterative imputation is a popular tool to accommodate the ubiquitous problem of missing data. While it is widely accepted that this technique can yield valid inferences, these inferences all rely on algorithmic convergence. Since there is no consensus on how to evaluate the convergence properties iterative imputation algorithms, our study provides insight into identifying non-convergence. We found that--in the cases considered--inferential validity was achieved after five to ten iterations, much earlier than indicated by diagnostic methods. We conclude that it never hurts to iterate longer, but such calculations hardly bring added value.
+Iterative imputation has become the de facto approach to accommodate the ubiquitous problem of missing data. While it is widely accepted that this technique can yield valid inferences, these inferences all rely on algorithmic convergence. Since there is no consensus on how to evaluate the convergence properties of iterative imputation algorithms, our study provides insight into identifying non-convergence. We found that--in the cases considered--inferential validity was achieved after five to ten iterations, much earlier than indicated by diagnostic methods. We conclude that it never hurts to iterate longer, but such calculations hardly bring added value.
 
 # Intro
 
@@ -208,10 +208,10 @@ Figure \@ref(fig:ac) shows the autocorrelations in the chain means (panel A), ch
 <!-- The next four plots show the autocorrelations in each parameter plotted against the number of iterations.  -->
 
 ```{r ac, fig.cap = "Autocorrelation (AC) with different parameters.", echo=FALSE}
-ac_means <- simulation_plot(v="ac.max.mu.Y", name = "AC chain means") 
-ac_vars <- simulation_plot(v="ac.max.sigma.Y", name = "AC chain variances")
-ac_betas <- simulation_plot(v="ac.max.qhat", name = quote("AC"~beta))
-ac_lambdas <- simulation_plot(v="ac.max.lambda", name = quote("AC"~lambda))
+ac_means <- simulation_plot(v="ac.max.mu.Y", name = "AC chain means") + ggplot2::scale_y_continuous(limits = c(0.15, 1))
+ac_vars <- simulation_plot(v="ac.max.sigma.Y", name = "AC chain variances") + ggplot2::scale_y_continuous(limits = c(0.15, 1))
+ac_betas <- simulation_plot(v="ac.max.qhat", name = quote("AC"~beta)) + ggplot2::scale_y_continuous(limits = c(0.15, 1))
+ac_lambdas <- simulation_plot(v="ac.max.lambda", name = quote("AC"~lambda)) + ggplot2::scale_y_continuous(limits = c(0.15, 1))
 (ac_means + ac_vars) / (ac_betas + ac_lambdas) + plot_layout(guides="collect") + plot_annotation(tag_levels = 'A')
 
 ```
@@ -230,10 +230,10 @@ The autocorrelation in the eigenvalues exhibits a similar trend to the autocorre
 Figure \@ref(fig:rh) shows the potential scale reduction factor in the chain means (panel A), chain variances (panel B), regression estimates (panel C), and eigenvalues (panel D).
 <!-- The next four plots show the $\widehat{R}$ in the different parameters. -->
 ```{r rh, fig.cap = "Potential scale reduction factor (Rh) with different parameters.", echo=FALSE}
-rh_means <- simulation_plot(v="r.hat.max.mu.Y", name = "Rh chain means") 
-rh_vars <- simulation_plot(v="r.hat.max.sigma.Y", name = "Rh chain variances")
-rh_betas <- simulation_plot(v="r.hat.max.qhat", name = quote("Rh"~beta))
-rh_lambdas <- simulation_plot(v="r.hat.max.lambda", name = quote("Rh"~lambda))
+rh_means <- simulation_plot(v="r.hat.max.mu.Y", name = "Rh chain means") + ggplot2::scale_y_continuous(limits = c(1, 1.65))
+rh_vars <- simulation_plot(v="r.hat.max.sigma.Y", name = "Rh chain variances") + ggplot2::scale_y_continuous(limits = c(1, 1.65))
+rh_betas <- simulation_plot(v="r.hat.max.qhat", name = quote("Rh"~beta)) + ggplot2::scale_y_continuous(limits = c(1, 1.65))
+rh_lambdas <- simulation_plot(v="r.hat.max.lambda", name = quote("Rh"~lambda)) + ggplot2::scale_y_continuous(limits = c(1, 1.65))
 (rh_means + rh_vars) / (rh_betas + rh_lambdas) + plot_layout(guides="collect") + plot_annotation(tag_levels = 'A')
 
 ```
@@ -254,43 +254,36 @@ $\widehat{R}$-values of the eigenvalues show a trend similar to the chain means 
 
 ## Performance Measures
 
-```{r echo=FALSE}
-p <- simulation_plot(v = "est", name = "Bias in regression estimate") + 
+```{r perf, fig.cap = "Performance measures.", echo=FALSE}
+est <- simulation_plot(v = "est", name = "Bias in regression estimate") + 
   list(geom_hline(yintercept = 0, color = "grey")) 
-p # %>% plotly::ggplotly()
+cov <- simulation_plot( v ="cov", name = "Coverage rate") + 
+  list(geom_hline(yintercept = 0.95, color = "grey"))
+ciw <- simulation_plot(v="CIW", name = "Average CI width") 
+rsq <- simulation_plot(v="rsq", name = "Bias in coefficient of determination") +
+  list(geom_hline(yintercept = 0, color = "grey"))
+(est + rsq) / (cov + ciw) + plot_layout(guides="collect") + plot_annotation(tag_levels = 'A')
 ```
 
-We see that within a few iterations the average bias approaches zero. When $it \geq 6$, even the worst-performing conditions (e.g., with a proportion of incomplete cases of 75%) produce stable, non-improving estimates [regression coefficient is underestimated because there is less info to estimate the relation??]. 
+We see that within a few iterations the bias in the regression estimate approaches zero (see \@ref(fig:perf)A). When $it \geq 6$, even the worst-performing conditions (e.g., with a proportion of incomplete cases of 75%) produce stable, non-improving estimates [regression coefficient is underestimated because there is less info to estimate the relation??]. 
+
+Equivalent to the bias in the regression estimate, the bias in the coefficient of determination tapers off within a couple of iterations (see \@ref(fig:perf)B). We observe stable estimates in all conditions when $it \geq 6$ [interpret the over-estimation in MNAR+75% condition?].
 
 <!-- Update with different CI computation, see <https://stefvanbuuren.name/fimd/sec-evaluation.html#sec:quantifyingbias> -->
 
 ```{r echo=FALSE}
-p <- simulation_plot( v ="cov", name = "Coverage rate") + 
-  list(geom_hline(yintercept = 0.95, color = "grey"))
-p # %>% plotly::ggplotly()
-
 # p <- simulation_plot( v ="cov", name = "Coverage rate") + 
 #   list(geom_hline(yintercept = 0.95, color = "grey")) +
 #   ylim(0.85, 1)
 
 ```
 
-Nominal coverage is quickly reached. After just three iterations, the coverage rates are non-improving in every missingness condition [but MNAR with 5% incomplete cases does not reach nominal coverage --\> due to bias in the estimate in combination with very narrow CI (see CIW!)].
+Nominal coverage is quickly reached (see \@ref(fig:perf)C). After just three iterations, the coverage rates are non-improving in every missingness condition [but MNAR with 5% incomplete cases does not reach nominal coverage --\> due to bias in the estimate in combination with very narrow CI (see CIW!)].
 
-```{r echo=FALSE}
-p <- simulation_plot(v="CIW", name = "Average CI width") 
-p # %>% plotly::ggplotly()
-```
 
-The average confidence interval width decreases quickly with every added iteration until a stable plateau is reached. Depending on the proportion of incomplete cases this takes up-to $it \geq 9$. 
+The average confidence interval width decreases quickly with every added iteration until a stable plateau is reached (see \@ref(fig:perf)D). Depending on the proportion of incomplete cases this takes up-to $it \geq 9$. 
 
-```{r echo=FALSE}
-p <- simulation_plot(v="rsq", name = "Bias in coefficient of determination") +
-  list(geom_hline(yintercept = 0, color = "grey"))
-p # %>% plotly::ggplotly()
-```
 
-Equivalent to the bias in the regression estimate, the bias in the coefficient of determination tapers off within a couple of iterations. We observe stable estimates in all conditions when $it \geq 6$ [interpret the over-estimation in MNAR+75% condition?].
 
 <!-- Magnitude of the bias in $r^2$ perfectly follows the missingness mechanisms: least bias for MCAR, most for MNAR. Worst effect of non-convergence for $p=0.95$, MNAR, but stable from it=6. -->
 
