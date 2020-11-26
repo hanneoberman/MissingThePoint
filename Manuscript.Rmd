@@ -80,51 +80,70 @@ ggplot(d, aes(x = .data[["it"]], y = .data[[v]])) +
 
 # Abstract
 
-Iterative imputation has become the de facto standard approach to accommodate the ubiquitous problem of missing data. While it is widely accepted that this technique can yield valid inferences, these inferences all rely on algorithmic convergence. Our study provides insight into identifying non-convergence in iterative imputation algorithms. We show that these algorithms can yield correct outcomes even when a converged state has not yet formally been reached. In the cases considered, inferential validity is achieved after five to ten iterations, much earlier than indicated by diagnostic methods. We conclude that it never hurts to iterate longer, but such calculations hardly bring added value.
+Iterative imputation has become the de facto standard to accommodate for the ubiquitous problem of missing data. While it is widely accepted that this technique can yield valid inferences, these inferences all rely on algorithmic convergence. Our study provides insight into identifying non-convergence in iterative imputation algorithms. We show that these algorithms can yield correct outcomes even when a converged state has not yet formally been reached. In the cases considered, inferential validity is achieved after five to ten iterations, much earlier than indicated by diagnostic methods. We conclude that it never hurts to iterate longer, but such calculations hardly bring added value.
 
 # Intro
 
 ## One
 
-- iterative imputation has become the de facto standard approach to accommodate missing data
+- Iterative imputation has become the de facto standard to accommodate for missing data. 
 
-- the aim is to draw valid inference: to get unbiased, confidence-valid estimates that incorporate the effect of the missingness
+- the aim is usually to draw valid inferences, i.e. to get 
+<!-- ... the aim is to draw valid inference: to get  -->
+unbiased, confidence-valid estimates that incorporate the effects of the missingness
 
-- the estimates are obtained by separating the missing data problem from the scientific problem
+- such estimates are obtained in it imp by separating the missing data problem from the scientific problem
 
-- the missing data problem is solved first: by imputing (i.e., filling in) the missing values in the incomplete dataset, using an algorithm such as MICE
+- the missing values are imputed (i.e., filled in) using some sort of algorithm. And subsequently, the scientific model of int is performed on the completed data. 
 
-- then the analysis of scientific interest can be performed on the completed data, which yields the scientific estimates
+<!-- data problem is solved first: by imputing (i.e., filling in) the missing values in the incomplete dataset, using an algorithm such as MICE -->
 
-- to obtain valid scientific estimates, both the missing data problem and the scientific problem should be solved correctly
+<!-- - then the analysis of scientific interest can be performed on the completed data, which yields the scientific estimates -->
 
-- one aspect that is often overlooked is the convergence of the algorithm that is used to generate imputations
+- to obtain valid scientific estimates, both the mis dat prob and the sci prob should be considered appropriately. 
+<!-- both the missing data problem and the scientific problem should be solved correctly -->
+
+- the validity of this whole process naturally depends on the convergence of the algorithm that was used to to generate the imp. 
+<!-- one aspect that is often overlooked is the convergence of the algorithm that is used to generate imputations -->
 
 
 ## Two
 
-- there is no consensus on the convergence properties of iterative imputation algorithms, and there has not been a systematic study on how to evaluate the convergence of these algorithms
+- determining whether an alg has conv is not trivial. 
+<!-- there is no consensus on the convergence properties of iterative imputation algorithms, and  -->
+there has not been a systematic study on how to evaluate the convergence of it imp algorithms
 
-- yet, the inferences rely on algorithmic convergence
+- yet, all inferences rely on the convergence of such alg
 
-- the current practice is visual inspection, but this may be inadequate because of reasons 1, 2, and 3 [see original text]
+- a widely accepted practice is visual inspection, but identifying convergence through visual inspection may be undesirable for several reasons: 1) it may be challenging to the untrained eye, 2) only severely pathological cases of non-convergence may be diagnosed, and 3) there is not an objective measure that quantifies convergence (Van Buuren, 2018, 6.5.2). Therefore, a quantitative diagnostic method to identify non-convergence would be preferred.
 
-- it is difficult that there is not at single point at which convergence is reached: the algorithm will produce some fluctuations even after convergence [it's convergence in distribution, not to a point]  <!-- (and a ... distribution may not exist because of univariate modeling of multivariate distribution???) -->
+<!-- this may be inadequate because of reasons 1, 2, and 3 [see original text] -->
+## new alinea
 
-- therefore, we should look at *non*-convergence
+- it is challenging to arrive at a single point at which conv has been reached. the algo may prod some fluc even after it has conv. the aim is to conv to a distr and not to a single point.
 
-- there are non-convergence identifiers for other iterative algorithms (MCMC), but it is not known whether these are appropriate for imputation algorithms as well
+<!-- - it is difficult that there is not at single point at which convergence is reached: the algorithm will produce some fluctuations even after convergence [it's convergence in distribution, not to a point]  <!-- (and a ... distribution may not exist because of univariate modeling of multivariate distribution???) --> -->
+
+- because of this property, it may be more desirable to focus on non-c.
+
+<!-- therefore, we should look at *non*-convergence --> [discussie: als we geen non-conv kunnen observeren, moeten we ons dan zorgen maken om convergentie??] -->
+
+- fortunately there are non-convergence identifiers for other iterative algorithms. but the validity of these identifiers has not been syst eval on imp alg.
+<!-- (MCMC), but it is not known whether these are appropriate for imputation algorithms as well -->
 
 
 ## Three 
 
-- in this paper, we explore different methods for identifying non-convergence in iterative imputation algorithms
+- in this study, we explore different methods for identifying non-convergence in iterative imputation algorithms. we eval whether these are able to cover the extend of the non-c but we also invest the relation between non-c and the validity of the inf.
+
+we investigate whether these identifiers are able to 
+
 
 - since the ultimate goal is to have inferential validity, we use this as performance measure in a simulation study: if the estimates are unbiased and confidence-valid, the non-convergence is, apparently, not influential
 
 - we develop guidelines for practice to interpret the non-convergence identifiers, because we typically don't have the ground truth (to calculate bias and coverage) 
 
-- we show how all this works by means of a case study
+- we demonst the workings of all this by means of a case study
 
 <!-- Iterative imputation has become the de facto standard approach to accommodate missing data problems. With iterative imputation, we 'impute' (i.e., fill in) plausible values in an incomplete dataset. These plausible values are generated using algorithms such as 'MICE' [@mice]. These algorithms sequence through the variables in an incomplete dataset  -->
 
