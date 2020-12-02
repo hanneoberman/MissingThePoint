@@ -80,22 +80,21 @@ ggplot(d, aes(x = .data[["it"]], y = .data[[v]])) +
 
 - bullet points are things I need to expand
 
-- asterisks denote a weak segway between sentences
+- asterisks denote a weak 'segway' between sentences
+
 
 # Intro
 
-Iterative imputation has become the de facto standard to accommodate for missing data. The aim is usually to draw valid inferences, i.e. to get unbiased, confidence-valid estimates that incorporate the effects of the missingness. Such estimates are obtained with iterative imputation by separating the missing data problem from the scientific problem. The missing values are imputed (i.e., filled in) using some sort of algorithm. And subsequently, the scientific model of interest is performed on the completed data. To obtain valid scientific estimates, both the missing data problem and the scientific problem should be considered appropriately. The validity of this whole process naturally depends on the convergence of the algorithm that was used to to generate the imputations. 
+Iterative imputation has become the de facto standard to accommodate for missing data. The aim is usually to draw valid inferences, i.e. to get unbiased, confidence-valid estimates that incorporate the effects of the missingness. Such estimates are obtained with iterative imputation by separating the missing data problem from the scientific problem. The missing values are imputed (i.e., filled in) using some sort of algorithm. And subsequently, the scientific model of interest is performed on the completed data. To obtain valid scientific estimates, both the missing data problem and the scientific problem should be appropriately considered. The validity of this whole process naturally depends on the convergence of the algorithm that was used to to generate the imputations. 
 
-All inferences rely on convergence of the algorithm, **yet** determining whether an algorithm has converged is not trivial.* There has not been a systematic study on how to evaluate the convergence of iterative imputation algorithms. A widely accepted practice is visual inspection of the algorithm, **but** identifying convergence through visual inspection may be undesirable for several reasons: 1) it may be challenging to the untrained eye, 2) only severely pathological cases of non-convergence may be diagnosed, and 3) there is not an objective measure that quantifies convergence [@buur18]. Therefore, a quantitative diagnostic method to identify convergence would be preferred.
+All inferences rely on the convergence of the imputation algorithm, yet determining whether an algorithm has converged is not trivial. There has not been a systematic study on how to evaluate the convergence of iterative imputation algorithms. A widely accepted practice is visual inspection of the algorithm, although diagnosing convergence through visual inspection may be undesirable for several reasons: 1) it may be challenging to the untrained eye, 2) only severely pathological cases of non-convergence may be diagnosed, and 3) there is not an objective measure that quantifies convergence [@buur18]. Therefore, a quantitative diagnostic method to assess convergence would be preferred.*
 
-It is challenging to arrive upon a single point at which convergence has been reached.* Since the aim is to converge to a distribution and not to a single point, the algorithm may produce some fluctuations even after it has converged. Because of this property, it may be more desirable to focus on *non*-convergence. Fortunately, there are non-convergence identifiers for other iterative algorithms, **although** the validity of these identifiers has not been systematically evaluated on imputation algorithms.
+It is challenging to arrive upon a single point at which convergence has been reached.* Since the aim is to converge to a distribution and not to a single point, the algorithm may produce some fluctuations even after it has converged. Because of this property, it may be more desirable to focus on *non*-convergence. Fortunately, there are non-convergence identifiers for other iterative algorithms, but the validity of these identifiers has not been systematically evaluated on imputation algorithms.
 
-In this study, we explore different methods for identifying non-convergence in iterative imputation algorithms. We evaluate whether these methods are able to cover the extent of the non-convergence, **but** we also investigate the relation between non-convergence and the validity of the inferences. We translate the results of our simulation study into guidelines for practice, which we demonstrate by means of a case study.
+In this study, we explore different methods for identifying non-convergence in iterative imputation algorithms. We evaluate whether these methods are able to cover the extent of the non-convergence, and we also investigate the relation between non-convergence and the validity of the inferences. We translate the results of our simulation study into guidelines for practice, which we demonstrate by means of a case study.
 
 
 # Simulation Set-Up
-
-<!-- The aim of the simulation study is to determine the impact of non-convergence on the validity of statistical inferences, and to assess whether non-convergence may be detected using several diagnostic methods. Inferential validity is reached when estimates are both unbiased and have nominal coverage across simulation repetitions (nsim = 1000). -->
 
 We investigate non-convergence in iterative imputation through model-based simulation in R (version 4.0.3; R Core Team 2020). We provide a summary of the simulation set-up in Algorithm 1; the complete script and technical details are available from [github.com/hanneoberman/MissingThePoint](https://github.com/hanneoberman/MissingThePoint).
 
@@ -118,7 +117,6 @@ We investigate non-convergence in iterative imputation through model-based simul
 ## Aims
 
 With this simulation, we assess the impact of non-convergence on the validity of scientific estimates obtained using the imputation package `{mice}` [@mice]. Inferential validity is reached when estimates are both unbiased and have nominal coverage across simulation repetitions ($n_{sim} = 1000$). To induce non-convergence, we terminate the algorithm after a varying number of iterations ($n_{it} = 1, 2, ..., 50$). We differentiate between nine different missingness scenarios that are defined by the data generating mechanism. 
-<!-- : three missingness mechanisms versus three proportions of incomplete cases [remove here if already defined above/below??]. -->
 
 ## Data generating mechanism
 
@@ -161,7 +159,7 @@ $$
 
 where $\hat{Y}$ is the predicted value of the outcome. Our estimands are the regression coefficient $\beta_1$ and coefficient of determination $\rho^2$ that we obtain after pooling the regression results across the imputations.
 
-## Methods
+## Diagnostic methods
 
 - non-convergence in iterative algorithms is diagnosed using an identifier and a parameter
 
@@ -187,7 +185,8 @@ We use eight different methods to diagnose non-convergence: a combination of two
 
 ## Performance measures
 
-As recommended by @buur18, our performance measures are bias, confidence interval width, and coverage rate of the estimands ($\S$ 2.5.2)[or just of the regression estimate?? otherwise add the ciw and cov of r2 too!!].
+As recommended by @buur18, our performance measures are bias, confidence interval width, and coverage rate of the estimands ($\S$ 2.5.2).
+<!-- [or just of the regression estimate?? otherwise add the ciw and cov of r2 too!!]. -->
 
 # Simulation Results
 
@@ -196,7 +195,6 @@ The following figures display the simulation results for the eight diagnostic me
 ## Diagnostic Methods
 
 Figure \@ref(fig:ac) shows the autocorrelations in the chain means (panel A), chain variances (panel B), regression estimates (panel C), and eigenvalues (panel D).
-<!-- The next four plots show the autocorrelations in each parameter plotted against the number of iterations. -->
 
 ```{r ac, fig.cap = "Autocorrelation (AC) with different parameters.", echo=FALSE}
 ac_means <- simulation_plot(v="ac.max.mu.Y", name = "AC chain means") + ggplot2::scale_y_continuous(limits = c(0.175, 1))
@@ -219,7 +217,6 @@ There is more autocorrelation in the scientific estimates than in the chain mean
 The autocorrelation in the eigenvalues exhibits a similar trend to the autocorrelation in the scientific estimates (see \@ref(fig:ac)D). Trending in this parameter diminishes when $n_{it} \geq 20$.
 
 Figure \@ref(fig:rh) shows the potential scale reduction factor in the chain means (panel A), chain variances (panel B), regression estimates (panel C), and eigenvalues (panel D).
-<!-- The next four plots show the $\widehat{R}$ in the different parameters. -->
 
 ```{r rh, fig.cap = "Potential scale reduction factor (Rh) with different parameters.", echo=FALSE}
 rh_means <- simulation_plot(v="r.hat.max.mu.Y", name = "Rh chain means") + ggplot2::scale_y_continuous(limits = c(1, 1.65))
@@ -263,16 +260,10 @@ We see that within a few iterations the bias in the regression estimate approach
 
 Equivalent to the bias in the regression estimate, the bias in the coefficient of determination tapers off within a couple of iterations (see \@ref(fig:perf)B). We observe stable estimates in all conditions when $n_{it} \geq 6$ [interpret the over-estimation in MNAR+75% condition?].
 
-<!-- Update with different CI computation, see <https://stefvanbuuren.name/fimd/sec-evaluation.html#sec:quantifyingbias> -->
-
 Nominal coverage is quickly reached (see \@ref(fig:perf)C). After just three iterations, the coverage rates are non-improving in every missingness condition [but MNAR with 5% incomplete cases does not reach nominal coverage --\> due to bias in the estimate in combination with very narrow CI (see CIW!)].
 
 
 The average confidence interval width decreases quickly with every added iteration until a stable plateau is reached (see \@ref(fig:perf)D). Depending on the proportion of incomplete cases this takes up-to $n_{it} \geq 9$. 
-
-
-
-<!-- Magnitude of the bias in $r^2$ perfectly follows the missingness mechanisms: least bias for MCAR, most for MNAR. Worst effect of non-convergence for $p=0.95$, MNAR, but stable from it=6. -->
 
 
 # Discussion
@@ -289,24 +280,6 @@ Our study found that---in the cases considered---inferential validity was achiev
 - Univariate thetas may under-estimate non-convergence. 
 
 - Determining non-stationarity with lambda is more difficult than with qhat :(
-
-<!-- # Check if heuristic for AC works -->
-
-<!-- ```{r} -->
-
-<!-- load("Data/diagnostics.Rdata") -->
-
-<!-- load("Data/raw_outcomes.Rdata") -->
-
-<!-- sim_nr <- 3 -->
-
-<!-- outcomes[[sim_nr]] %>% filter(mech == "MCAR", p == 0.95) %>% ggplot(aes(x=it, y = est)) + geom_line() -->
-
-<!-- convergence_diagnostics %>% filter(sim == sim_nr, mech == "MCAR", p ==0.95) %>% ggplot(aes(x=it, y = ac.max.qhat)) + geom_line() -->
-
-<!-- convergence_diagnostics %>% filter(sim == sim_nr, mech == "MCAR", p ==0.95) %>% ggplot(aes(x=it, y = ac.max.lambda)) + geom_line() -->
-
-<!-- ``` -->
 
 
 In short, the validity of iterative imputation stands or falls with algorithmic convergence---or so it's thought. We have shown that iterative imputation algorithms can yield correct outcomes even when a converged state has not yet formally been reached. Any further iterations just burn computational resources without improving the statistical inferences. 
