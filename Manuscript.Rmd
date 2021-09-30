@@ -5,7 +5,7 @@ date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
   bookdown::pdf_document2
 bibliography: ref.bib
-abstract: "Iterative imputation has become the de facto standard to accommodate for the ubiquitous problem of missing data. While it is widely accepted that this technique can yield valid inferences, these inferences all rely on algorithmic convergence. Our study provides insight into identifying non-convergence in iterative imputation algorithms. We show that these algorithms can yield correct outcomes even when a converged state has not yet formally been reached. In the cases considered, inferential validity is achieved after five to ten iterations, much earlier than indicated by diagnostic methods. We conclude that it never hurts to iterate longer, but such calculations hardly bring added value."
+abstract: "Iterative imputation has become the de facto standard to accommodate the ubiquitous problem of missing data. While it is widely accepted that this technique can yield valid inferences, these inferences all rely on algorithmic convergence. Our study provides insight into identifying non-convergence in iterative imputation algorithms. We show that these algorithms can yield correct outcomes even when a converged state has not yet formally been reached. In the cases considered, inferential validity is achieved after five to ten iterations, much earlier than indicated by diagnostic methods. We conclude that it never hurts to iterate longer, but such calculations hardly bring added value."
 
 ---
 
@@ -85,11 +85,13 @@ ggplot(d, aes(x = .data[["it"]], y = .data[[v]])) +
 
 # Intro
 
-Iterative imputation has become the de facto standard to accommodate missing data in social scientific research [ref: e.g., rubin after 18 years paper? or murray 2018?]. The technique enables researchers to draw valid inferences when faced with [phrasing: despite of?] incomplete observations. Every missing cell in an incomplete dataset is imputed (i.e., filled in) using an imputation algorithm. And once the dataset is completed, an analysis of scientific interest can be performed. This analysis will yield unbiased and confidence-valid estimates when both the missing data problem and the scientific problem are appropriately considered. The validity of this whole process naturally depends on the convergence of the algorithm that was used to to generate the imputed values. Yet, there has not been a systematic study on how to evaluate the convergence of iterative imputation algorithms.
+Iterative imputation has become the de facto standard to accommodate missing data in social scientific research [ref: e.g., rubin after 18 years paper? murray 2018?]. The technique enables researchers to draw valid inferences when faced with incomplete observations, without resorting to ad hoc solutions such as list-wise deletion which may bias results. With iterative imputation, every missing cell in an incomplete dataset is imputed (i.e., filled in) algorithmically. And once the dataset is completed, the analysis of scientific interest can be performed. This analysis will yield unbiased and confidence-valid estimates if--and only if--both the missing data problem and the scientific problem are appropriately considered. The validity of this whole process naturally depends on the convergence of the algorithm that was used to to generate the imputed values. Yet, there has not been a systematic study on how to evaluate the convergence of iterative imputation algorithms.
 
 <!-- Any scientific inferences obtained after iterative imputation rely on the convergence of the imputation algorithm,  -->
 
-Determining whether an algorithm has converged is not trivial, especially in the context of iterative imputation.* It is challenging to arrive upon a single point at which convergence has been reached. Since the aim of iterative imputation is to converge to a distribution and not to a single point, the algorithm may produce some fluctuations even after it has converged. Because of this property, it may be more desirable to focus on *non*-convergence. A widely accepted practice is visual inspection of the algorithm [@ragh07; @buur18]. Diagnosing non-convergence through visual inspection may, however, be undesirable: 1) it may be challenging to the untrained eye, 2) only severely pathological cases of non-convergence may be diagnosed, and 3) there is not an objective measure that quantifies convergence [@buur18]. [add argument: "Inspection of such plots is a notoriously unreliable method of assessing convergence and in addition is unwieldy when monitoring a large number of quantities of interest, such as can arise in complicated hierarchical models" (Gelman et al., 2013, p. 285).] Therefore, a quantitative diagnostic method to assess convergence would be preferred. Fortunately, there are non-convergence identifiers for other iterative algorithms, but the validity of these identifiers has not been systematically evaluated on imputation algorithms. 
+Determining whether an algorithm has converged is not trivial, especially in the context of iterative imputation. Since the aim of iterative imputation is to converge to a distribution and not to a single point, the algorithm may produce some fluctuations even after it has converged. Because of this property, it may be more desirable to focus on *non*-convergence. A widely accepted practice is visual inspection of the algorithm [@ragh07; @buur18]. Diagnosing non-convergence through visual inspection may, however, be undesirable: 1) it may be challenging to the untrained eye, 2) only severely pathological cases of non-convergence may be diagnosed, and 3) there is not an objective measure that quantifies convergence [@buur18]. [add argument: "Inspection of such plots is a notoriously unreliable method of assessing convergence and in addition is unwieldy when monitoring a large number of quantities of interest, such as can arise in complicated hierarchical models" (Gelman et al., 2013, p. 285).] Therefore, a quantitative diagnostic method to assess convergence would be preferred. Fortunately, there are non-convergence identifiers for *other* iterative algorithms, but the validity of these identifiers has not been systematically evaluated on imputation algorithms. 
+
+<!-- It is challenging to arrive upon a single point at which convergence has been reached. -->
 
 In this study, we explore different methods for identifying non-convergence in iterative imputation algorithms. We evaluate whether these methods are able to cover the extent of the non-convergence, and we also investigate the relation between non-convergence and the validity of the inferences. We translate the results of our simulation study into guidelines for practice, which we demonstrate by means of a case study.
 
@@ -117,11 +119,11 @@ We investigate non-convergence in iterative imputation through model-based simul
 
 ## Aims
 
-With this simulation, we assess the impact of non-convergence on the validity of scientific estimates obtained using the imputation package `{mice}` [@mice]. Inferential validity is reached when estimates are both unbiased and have nominal coverage across simulation repetitions ($n_{sim} = 1000$). To assess non-convergence, we terminate the algorithm after a varying number of iterations ($n_{it} = 1, 2, ..., 50$). We differentiate between nine different missingness scenarios that are defined by the data generating mechanism. 
+With this simulation, we assess the impact of non-convergence on the validity of scientific estimates obtained using the imputation package `{mice}` [@mice]. Inferential validity is reached when estimates are both unbiased and have nominal coverage across simulation repetitions ($n_{sim} = 1000$). To assess non-convergence, we terminate the imputation algorithm after a varying number of iterations ($n_{it} = 1, 2, ..., 50$). We differentiate between nine different missingness scenarios that are defined in the data generating mechanism. 
 
 ## Data generating mechanism
 
-Data are generated in each simulation repetition for a complete set of $n_{obs} = 1000$ cases (i.e., before inducing missingness). We define three multivariately normal random variables, let
+We generate one complete set of $n_{obs} = 1000$ cases in each simulation repetition. This set consists of three multivariately normal random variables, such that
 
 $$
 \begin{pmatrix}
@@ -144,15 +146,32 @@ X_2
 \end{bmatrix}.
 $$ 
 
-The complete set is amputed according to nine missingness conditions. We use a $3 \times 3$ factorial design consisting of three missingness mechanisms and three proportions of incomplete cases. 
+The complete set is 'amputed' (i.e., made incomplete) according to nine missingness conditions. We use a $3 \times 3$ factorial design with three missingness mechanisms and three proportions of incomplete cases, see Figure XYZ. Missingness mechanisms refer to the probability of being missing for any given entry in a dataset. There are three distinct types of mechanisms, as defined by Rubin (1976). Roughly translated, the probability of being missing may be equal for all entries (MCAR; Missing Completely At Random), the probability of being missing depends on observed information (MAR; Missing At Random), or the probability depends on *un*observed information, making the missingness non-ignorable (MNAR; Missing Not At Random). [add left-tailed M(N)AR mechanism, md pattern, and maybe refer to ampute paper or "Dance of..." by Schouten 2018].
 
-- we use the three missingness mechanisms MCAR, MAR, and MNAR with defaults settings from `mice::ampute()` (e.g., right-tailed MAR)
+```{r figure-missingness, echo=FALSE}
+tibble(prop = c(25,50,75), MCAR = 1:3, MAR = 4:6, MNAR = 7:9) %>% 
+  pivot_longer(cols = c(MCAR, MAR, MNAR)) %>% 
+  mutate(prop = factor(prop, levels = c(25, 50, 75), labels = c("25%", "50%", "75%")),
+         mech = factor(name, levels = c("MCAR", "MAR", "MNAR")),
+         text = paste(mech, "missingness\n", prop, "incomplete")) %>% 
+  ggplot(aes(x = mech, y = prop, fill = as.factor(value), label = text)) +
+  geom_tile(color = "black") +
+  geom_text() +
+  scale_fill_brewer(palette = "RdYlBu", direction = -1, guide = "none") +
+  scale_y_discrete(limits = c("75%", "50%", "25%")) +
+  scale_x_discrete(breaks = c("MCAR", "MAR", "MNAR")) +
+  theme_minimal() +
+  labs(x = "Missingness mechanism", y = "Proportion of incomplete cases")
+```
 
-- we use a multivariate missing data pattern and make 25%, 50%, and 75% of cases incomplete
+
+<!-- - we use the three missingness mechanisms MCAR, MAR, and MNAR with defaults settings from `mice::ampute()` (e.g., right-tailed MAR) -->
+
+<!-- - we use a multivariate missing data pattern and make 25%, 50%, and 75% of cases incomplete -->
 
 ## Estimands
 
-We impute the missing data five times ($m = 5$) using Bayesian linear regression imputation with `mice` [@mice]. On each imputed dataset, we perform multiple linear regression to predict outcome variable $Y$ from the other two variables
+We impute the missing data five times ($m = 5$) using Bayesian linear regression imputation with `mice` [@mice]. On each imputed dataset, we perform multiple linear regression as our analysis of scientific interest. We predict outcome variable $Y$ from the other two variables,
 
 $$
 \hat{Y} = \beta_0 + \beta_1 X_1 + \beta_2 X_2,
@@ -186,7 +205,7 @@ We use eight different methods to diagnose non-convergence: a combination of two
 
 ## Performance measures
 
-As recommended by @buur18, our performance measures are bias, confidence interval width, and coverage rate of the estimands ($\S$ 2.5.2).
+As recommended by van Buuren, our performance measures are bias, confidence interval width, and coverage rate of the estimands (-@buur18 $\S$ 2.5.2). These measures are averaged across the simulation repetitions.
 <!-- [or just of the regression estimate?? otherwise add the ciw and cov of r2 too!!]. -->
 
 # Simulation Results
